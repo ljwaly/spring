@@ -273,7 +273,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * <p>By default, only the BeanFactoryAware interface is ignored.
 	 * For further types to ignore, invoke this method for each type.
 	 * @see org.springframework.beans.factory.BeanFactoryAware
-	 * @see org.springframework.context.ApplicationContextAware
 	 */
 	public void ignoreDependencyInterface(Class<?> ifc) {
 		this.ignoredDependencyInterfaces.add(ifc);
@@ -546,6 +545,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
+	 * Bean核心初始化方法，重要程度5
+	 * 构造方法参数初始化
+	 * 初始化
+	 * 成员变量初始化
+	 * 后置方法初始化
+	 *
+	 *
 	 * Actually create the specified bean. Pre-creation processing has already happened
 	 * at this point, e.g. checking {@code postProcessBeforeInstantiation} callbacks.
 	 * <p>Differentiates between default bean instantiation, use of a
@@ -627,12 +633,54 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
+
+
+
+
+
+
+
+
+
+
+
 		// Initialize the bean instance.
 		Object exposedObject = bean;
 		try {
+
+			/**
+			 * IOC，DI
+			 * 重要程度5
+			 *
+			 * 初始化成员变量
+			 * 主要扫描的注解
+			 * 通过BeanPostProcessor实现:对应方法是postProcessProperties()
+			 *
+			 * @Autowired
+			 * @Resource
+			 *
+			 */
 			populateBean(beanName, mbd, instanceWrapper);
+
+
+			/**
+			 * 处理
+			 * bean初始化成员变量之后的，后置方法处理
+			 * @PostConstrust
+			 * init-method,
+			 * afterPropertySet()
+			 *
+			 * 1.调用Aware接口
+			 * 2.调用@PostConstruct注解方法，通过BeanPostProcessor的接口进行实现该功能
+			 * 3.调用InitializingBean接口的afterPropertiesSet()方法，调用xml配置的init-method中配置的方法
+			 * 4.AOP通过BeanPostProcessor接口来完成代理(动态代理)
+			 *
+			 */
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
+
+
 		}
+
 		catch (Throwable ex) {
 			if (ex instanceof BeanCreationException && beanName.equals(((BeanCreationException) ex).getBeanName())) {
 				throw (BeanCreationException) ex;
@@ -642,6 +690,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 						mbd.getResourceDescription(), beanName, "Initialization of bean failed", ex);
 			}
 		}
+
+
+
+
+
+
+
 
 		if (earlySingletonExposure) {
 			Object earlySingletonReference = getSingleton(beanName, false);
@@ -1457,11 +1512,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Give any InstantiationAwareBeanPostProcessors the opportunity to modify the
 		// state of the bean before properties are set. This can be used, for example,
 		// to support styles of field injection.
+		//这里可以让所有的bean的依赖的成员变量无法DI
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof InstantiationAwareBeanPostProcessor) {
 					InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
 					if (!ibp.postProcessAfterInstantiation(bw.getWrappedInstance(), beanName)) {
+						//这个if判读是个黑方法，可以被覆盖，导致bean成员变量初始化失败
 						return;
 					}
 				}
@@ -1865,8 +1922,19 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
+			/**
+			 * @PostConstruct注解的（用的最多）
+			 *
+			 * InitializingBean接口实现的
+			 * afterPropertiesSet方法的（用的最多）
+			 *
+			 * xml配置init-method
+			 *
+			 */
 			invokeInitMethods(beanName, wrappedBean, mbd);
+
 		}
+
 		catch (Throwable ex) {
 			throw new BeanCreationException(
 					(mbd != null ? mbd.getResourceDescription() : null),
