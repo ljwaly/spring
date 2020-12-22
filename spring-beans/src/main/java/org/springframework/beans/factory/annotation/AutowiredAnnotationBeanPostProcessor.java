@@ -259,6 +259,11 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			throws BeanCreationException {
 
 		// Let's check for lookup methods here...
+		/**
+		 * 暂时不看
+		 * 这个方法主要是为了对@Lookup的注解支持
+		 * 在现在springboot中基本用不到
+		 */
 		if (!this.lookupMethodsChecked.contains(beanName)) {
 			if (AnnotationUtils.isCandidateClass(beanClass, Lookup.class)) {
 				try {
@@ -320,6 +325,8 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 						else if (primaryConstructor != null) {
 							continue;
 						}
+
+						//从这个candidate构造函数里面找到@Autowired注解
 						MergedAnnotation<?> ann = findAutowiredAnnotation(candidate);
 						if (ann == null) {
 							Class<?> userClass = ClassUtils.getUserClass(beanClass);
@@ -341,8 +348,13 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 										". Found constructor with 'required' Autowired annotation already: " +
 										requiredConstructor);
 							}
+
+							//注解的默认属性，是否必须，默认是true
 							boolean required = determineRequiredStatus(ann);
 							if (required) {
+								/**
+								 * 多个构造方法的情况下，如果不配置，会导致都会true，这里就会抛异常
+								 */
 								if (!candidates.isEmpty()) {
 									throw new BeanCreationException(beanName,
 											"Invalid autowire-marked constructors: " + candidates +
@@ -351,7 +363,12 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 								}
 								requiredConstructor = candidate;
 							}
+
+							//将合适的构造方法放入缓存
 							candidates.add(candidate);
+
+
+
 						}
 						else if (candidate.getParameterCount() == 0) {
 							defaultConstructor = candidate;
@@ -385,10 +402,16 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					else {
 						candidateConstructors = new Constructor<?>[0];
 					}
+
+
+					//并经这个构造方法放入缓存
 					this.candidateConstructorsCache.put(beanClass, candidateConstructors);
 				}
 			}
 		}
+
+
+		//返回构造方法
 		return (candidateConstructors.length > 0 ? candidateConstructors : null);
 	}
 

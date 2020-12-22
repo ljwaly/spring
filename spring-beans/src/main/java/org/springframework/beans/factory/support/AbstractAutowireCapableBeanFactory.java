@@ -570,13 +570,30 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		if (mbd.isSingleton()) {
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
+
+
+
 		if (instanceWrapper == null) {
 
 			/**
 			 * 创建实例，着重看，重要程度5
+			 * 真实去创建实例：
+			 * 1.factory-method方式
+			 * 2.@Autowired有参构造方法
+			 * 3.@Autowired无参构造方法
+			 * 4.默认无参构造方法
+			 *
 			 */
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
+
+
 		}
+
+
+
+
+
+
 		//拿到真正的实例对象
 		Object bean = instanceWrapper.getWrappedInstance();
 		Class<?> beanType = instanceWrapper.getWrappedClass();
@@ -1240,10 +1257,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Candidate constructors for autowiring?
 		/**
 		 * 2.实例化@Autowired注解有参构造方法
+		 * (1).这里通过几种BeanPostProcessor来寻找构造方法（component-scan装配的时候，加入的几个BeanPostProcessor（Autowired，Common））
 		 */
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
 		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
 				mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
+			// 找到构造方法之后，反射调用构造方法，创建bean
 			return autowireConstructor(beanName, mbd, ctors, args);
 		}
 
@@ -1333,11 +1352,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			throws BeansException {
 
 		if (beanClass != null && hasInstantiationAwareBeanPostProcessors()) {
+
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
+				//这些BeanPostProcessor已经在refresh()方法中的registerBeanPostProcessor中实例化过了
 				if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
 					SmartInstantiationAwareBeanPostProcessor ibp = (SmartInstantiationAwareBeanPostProcessor) bp;
 					Constructor<?>[] ctors = ibp.determineCandidateConstructors(beanClass, beanName);
 					if (ctors != null) {
+						//在AutowiredAnnotationBeanPostProcessor中，会获取到这个构造方法
 						return ctors;
 					}
 				}
@@ -1407,7 +1429,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	protected BeanWrapper autowireConstructor(
 			String beanName, RootBeanDefinition mbd, @Nullable Constructor<?>[] ctors, @Nullable Object[] explicitArgs) {
 
-		return new ConstructorResolver(this).autowireConstructor(beanName, mbd, ctors, explicitArgs);
+		return new ConstructorResolver(this)
+				//反射调用构造方法
+				.autowireConstructor(beanName, mbd, ctors, explicitArgs);
 	}
 
 	/**

@@ -201,7 +201,12 @@ public abstract class BeanUtils {
 						argsWithDefaultValues[i] = args[i];
 					}
 				}
+
+
+				// 构造方法对象通过newInstance方法传入参数反射调用获取对象
 				return ctor.newInstance(argsWithDefaultValues);
+
+
 			}
 		}
 		catch (InstantiationException ex) {

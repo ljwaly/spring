@@ -114,6 +114,8 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 					return null;
 				});
 			}
+
+			//反射调用
 			return BeanUtils.instantiateClass(ctor, args);
 		}
 		else {
@@ -151,7 +153,17 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 			Method priorInvokedFactoryMethod = currentlyInvokedFactoryMethod.get();
 			try {
 				currentlyInvokedFactoryMethod.set(factoryMethod);
+
+
+				/**
+				 * 通过传入的factoryMethod的Method去反射调用 factory-bean的对应的mbd的 初始化构造方法,
+				 * args为方法初始化需要的参数
+				 * 这个invoke调用为jdk的基本反射方法
+				 * 这个时候，会调用factory-method方法，可以在对应方法打断点验证
+				 */
 				Object result = factoryMethod.invoke(factoryBean, args);
+
+
 				if (result == null) {
 					result = new NullBean();
 				}
