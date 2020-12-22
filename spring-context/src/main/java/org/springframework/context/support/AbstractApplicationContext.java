@@ -497,6 +497,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		return this.beanFactoryPostProcessors;
 	}
 
+	/**
+	 * 如果可以拿到ApplicationContext，肯定可以add进去，
+	 *
+	 * @param listener
+	 */
 	@Override
 	public void addApplicationListener(ApplicationListener<?> listener) {
 		Assert.notNull(listener, "ApplicationListener must not be null");
@@ -508,6 +513,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 	/**
 	 * Return the list of statically specified ApplicationListeners.
+	 * 通过这个方法addApplicationListener加入需要监听的类
 	 */
 	public Collection<ApplicationListener<?>> getApplicationListeners() {
 		return this.applicationListeners;
@@ -528,6 +534,23 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
+			/**
+			 * 1.创建BeanFactory
+			 * 2.xml解析
+			 * 	 传统标签bean,import解析
+			 * 	 自定义标签，如<context:component-scan base-packages="com.ljw" />
+			 * 	 	自定义标签解析流程：
+			 * 	 	  a、根据当前标签头信息找到对应的namespaceUrl
+			 * 	 	  b、加载spring的jar包中的所有spring.handlers文件，建立映射关系
+			 * 	 	  c、根据namespaceUrl从映射关系中找到对应的实现了NamespaceHandler接口的类
+			 * 	 	  d、调用init方法，init方法注册了各种自定义标签的解析类
+			 * 	 	  e、根据namespaceUrl找到对应的解析类，然后调用paser方法完成标签解析
+			 *
+			 * 3.把解析出来的xml标签封装成BeanDefinition对象
+			 *
+			 *
+			 *
+			 */
 			prepareBeanFactory(beanFactory);
 
 			try {
@@ -536,20 +559,39 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				// Invoke factory processors registered as beans in the context.
 				/**
-				 * 5星方法，最终要方法之一
+				 * 5星方法，
+				 * 最重要方法之一
 				 * 创建各种BeanDefinition
 				 * 对BeanDefinition的增删改查
 				 * 扫描各种符合类型的BeanDefinition
+				 * BeanDefinitionRegistryPostProcessor调用
+				 * BeanFactoryPostProcessor调用
 				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
+				/**
+				 * 把实现了BeanPostProcessor接口的类，
+				 * 1.进行实例化getBean，
+				 * 2.并且加入到beanFactory
+				 *
+				 * 主要是以下2个：
+				 * AutowiredAnnotationBeanPostProcessor
+				 * CommonAnnotationBeanPostProcessor
+				 */
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
+				/**
+				 * 国际化，重要程度2
+				 */
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
+				/**
+				 * 初始化事件管理器（管理类）
+				 * 创建一个事件类，加入beanfactory
+				 */
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
@@ -566,6 +608,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 针对不同的listener的加载处理
 				 * 1.直接在创建上下文之后，加入的listerner
 				 * 2.实现ApplicationListener接口的实现类
+				 * 将所有实现了@ApplicationListener的接口监听类都放入到一个set容器
+				 * 监听类的发布事件，是需要实现ApplicationEvent的事件
 				 * 发布订阅模式
 				 *
 				 */
@@ -573,8 +617,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				// Instantiate all remaining (non-lazy-init) singletons.
 				/**
-				 * 对bean的单利实例化
-				 * spring源码最重要方法，没有之一
+				 * 这个方法是spring中最重要的方法，没有之一
+				 * 所以这个方法一定要具体看
+				 * 1.bean实例化过程
+				 * 2.ioc
+				 * 3.注解支持
+				 * 4.BeanPostProfcessor的执行
+				 * 5.Aop的入口
 				 *
 				 */
 				finishBeanFactoryInitialization(beanFactory);
@@ -800,8 +849,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			}
 		}
 		else {
+
+			//核心代码，创建时间管理类，
 			this.applicationEventMulticaster = new SimpleApplicationEventMulticaster(beanFactory);
+
+			//放入到BeanFactory，注册到单利池（一级缓存）
 			beanFactory.registerSingleton(APPLICATION_EVENT_MULTICASTER_BEAN_NAME, this.applicationEventMulticaster);
+
 			if (logger.isTraceEnabled()) {
 				logger.trace("No '" + APPLICATION_EVENT_MULTICASTER_BEAN_NAME + "' bean, using " +
 						"[" + this.applicationEventMulticaster.getClass().getSimpleName() + "]");
@@ -852,18 +906,35 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void registerListeners() {
 		// Register statically specified listeners first.
+		/**
+		 * 在refresh方法执行的时候，这个里面还是null
+		 *
+		 * 具体例子可以看测试的直接添加监听的
+		 * xml的方式：需要在创建xml的容器的时候，直接add进去的
+		 * 如果可以拿到ApplicationContext，肯定可以add进去，可以通过这里监听
+		 */
 		for (ApplicationListener<?> listener : getApplicationListeners()) {
 			getApplicationEventMulticaster().addApplicationListener(listener);
 		}
 
 		// Do not initialize FactoryBeans here: We need to leave all regular beans
 		// uninitialized to let post-processors apply to them!
+		/**
+		 * 这个是在实现了listner接口的对象加了@Component注解，是直接就是bean工厂管理的
+		 * 从beanFactory中拿出对应的监听类
+		 */
 		String[] listenerBeanNames = getBeanNamesForType(ApplicationListener.class, true, false);
 		for (String listenerBeanName : listenerBeanNames) {
-			getApplicationEventMulticaster().addApplicationListenerBean(listenerBeanName);
+			//拿到事件管理类（即refres方法中的这个方法initApplicationEventMulticaster()）
+			// ，并把这些listener的beanName加入到了
+			getApplicationEventMulticaster()
+					.addApplicationListenerBean(listenerBeanName);
 		}
 
 		// Publish early application events now that we finally have a multicaster...
+		/**
+		 * 下面的代码基本上走不到
+		 */
 		Set<ApplicationEvent> earlyEventsToProcess = this.earlyApplicationEvents;
 		this.earlyApplicationEvents = null;
 		if (!CollectionUtils.isEmpty(earlyEventsToProcess)) {
@@ -879,6 +950,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
 		// Initialize conversion service for this context.
+		/**
+		 * 设置类型
+		 */
 		if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME) &&
 				beanFactory.isTypeMatch(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class)) {
 			beanFactory.setConversionService(
@@ -912,6 +986,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Instantiate all remaining (non-lazy-init) singletons.
 		/**
+		 * 最最重要：重要程度5
 		 * 实例化
 		 */
 		beanFactory.preInstantiateSingletons();

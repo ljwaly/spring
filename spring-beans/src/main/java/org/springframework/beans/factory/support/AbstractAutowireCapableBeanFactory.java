@@ -522,9 +522,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		try {
 			/**
+			 * 实例化-5
+			 *
 			 * 核心方法，重要程度5
 			 */
 			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
+
+
 			if (logger.isTraceEnabled()) {
 				logger.trace("Finished creating instance of bean '" + beanName + "'");
 			}
@@ -545,6 +549,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
+	 * 实例化-5
+	 * 此方法最终完成bean的实例化
+	 *
 	 * Bean核心初始化方法，重要程度5
 	 * 构造方法参数初始化
 	 * 初始化
@@ -582,6 +589,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		if (instanceWrapper == null) {
 
 			/**
+			 * 实例化-6
+			 *
 			 * 创建实例，着重看，重要程度5
 			 * 真实去创建实例：
 			 * 1.factory-method方式

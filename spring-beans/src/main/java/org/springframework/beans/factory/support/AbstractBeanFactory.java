@@ -204,6 +204,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 	@Override
 	public Object getBean(String name) throws BeansException {
+		/**
+		 * 实例化-2
+		 */
 		return doGetBean(name, null, null, false);
 	}
 
@@ -347,12 +350,18 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				if (mbd.isSingleton()) {
 
 					/**
+					 * 实例化-3
+					 *
 					 * 这里的lambda表达式，是传入对象的需要实现的接口实现，
 					 * 在这里，即ObjectFactory的getObject()接口方法
+					 *
 					 */
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
 							//getSingleton的匿名对象调用接口方法getObject()触发此实现
+							/**
+							 * 实例化-4
+							 */
 							return createBean(beanName, mbd, args);
 						}
 						catch (BeansException ex) {
@@ -1372,6 +1381,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					// Child bean definition: needs to be merged with parent.
 					BeanDefinition pbd;
 					try {
+						//拿到父的名称
 						String parentBeanName = transformedBeanName(bd.getParentName());
 						if (!beanName.equals(parentBeanName)) {
 							pbd = getMergedBeanDefinition(parentBeanName);
