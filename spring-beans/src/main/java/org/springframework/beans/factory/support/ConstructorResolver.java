@@ -399,6 +399,7 @@ class ConstructorResolver {
 		Class<?> factoryClass;
 		boolean isStatic;
 
+		//获取factoryBean name对应xml里面的factory-bean
 		String factoryBeanName = mbd.getFactoryBeanName();
 		if (factoryBeanName != null) {
 			if (factoryBeanName.equals(beanName)) {

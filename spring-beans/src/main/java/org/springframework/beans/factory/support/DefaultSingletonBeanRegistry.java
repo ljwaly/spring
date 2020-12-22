@@ -251,6 +251,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				 * 把beanName添加到singletonsCurrentlyInCreation Set容器中，
 				 * 在这个集合里面的bean，都是单例的
 				 * 这个池中的对象，都是正在被创建的对象
+				 * 当单例的bean正在被创建的时候，
 				 */
 				beforeSingletonCreation(beanName);
 				boolean newSingleton = false;
