@@ -127,6 +127,13 @@ public class InjectionMetadata {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Processing injected element of bean '" + beanName + "': " + element);
 				}
+
+				/**
+				 * DI-核心代码-4
+				 *
+				 * 有注解的属性调用
+				 * 此时可能有属性和方法多种
+				 */
 				element.inject(target, beanName, pvs);
 			}
 		}

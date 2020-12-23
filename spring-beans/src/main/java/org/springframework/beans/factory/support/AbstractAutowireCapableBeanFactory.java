@@ -645,8 +645,18 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
+
+
+
+
 		// Eagerly cache singletons to be able to resolve circular references
 		// even when triggered by lifecycle interfaces like BeanFactoryAware.
+		/**
+		 * 是否单例bean提前暴露
+		 * 这里解决循环依赖的问题
+		 *
+		 *
+		 */
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
 				isSingletonCurrentlyInCreation(beanName));
 		if (earlySingletonExposure) {
@@ -654,13 +664,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
+
+			/**
+			 * 重要程度5,
+			 * 这里对理解循环依赖帮助比较大
+			 * 添加三级缓存
+			 */
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
-
-
-
-
-
 
 
 
@@ -679,7 +690,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 * 初始化成员变量
 			 * 主要扫描的注解
 			 * 通过BeanPostProcessor实现:对应方法是postProcessProperties()
-
 			 *
 			 */
 			populateBean(beanName, mbd, instanceWrapper);
@@ -1520,6 +1530,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	}
 
 	/**
+	 * DI-核心代码
+	 *
 	 * Populate the bean instance in the given BeanWrapper with the property values
 	 * from the bean definition.
 	 * @param beanName the name of the bean
@@ -1539,10 +1551,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
+
+
+
 		// Give any InstantiationAwareBeanPostProcessors the opportunity to modify the
 		// state of the bean before properties are set. This can be used, for example,
 		// to support styles of field injection.
-		//这里可以让所有的bean的依赖的成员变量无法DI
+		/**
+		 * 这里可以让所有的bean的依赖的成员变量无法DI
+		 */
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof InstantiationAwareBeanPostProcessor) {
@@ -1554,6 +1571,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				}
 			}
 		}
+
+
 
 		PropertyValues pvs = (mbd.hasPropertyValues() ? mbd.getPropertyValues() : null);
 
@@ -1571,22 +1590,47 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			pvs = newPvs;
 		}
 
+
+
+
+
 		boolean hasInstAwareBpps = hasInstantiationAwareBeanPostProcessors();
 		boolean needsDepCheck = (mbd.getDependencyCheck() != AbstractBeanDefinition.DEPENDENCY_CHECK_NONE);
 
+
+
 		PropertyDescriptor[] filteredPds = null;
+
+
+		/**
+		 * 核心代码，重要程度5
+		 * DI-核心代码-1
+		 */
 		if (hasInstAwareBpps) {
 			if (pvs == null) {
 				pvs = mbd.getPropertyValues();
 			}
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof InstantiationAwareBeanPostProcessor) {
+					// 要求processor是InstantiationAwareBeanPostProcessor的子类
+
 					InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+
+					/**
+					 * DI-核心代码-2
+					 * 基于注解的依赖注入
+					 * 依赖注入过程，@Autowired的支持
+					 */
 					PropertyValues pvsToUse = ibp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName);
 					if (pvsToUse == null) {
 						if (filteredPds == null) {
 							filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
 						}
+
+
+						/**
+						 * 老版本用这个完成依赖注入过程，@Autowired支持
+						 */
 						pvsToUse = ibp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
 						if (pvsToUse == null) {
 							return;

@@ -146,7 +146,12 @@ public class InitDestroyAnnotationBeanPostProcessor
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		/**
+		 * 收集PostConstruct和PreDestory注解-2
+		 *
+		 */
 		LifecycleMetadata metadata = findLifecycleMetadata(beanType);
+
 		metadata.checkConfigMembers(beanDefinition);
 	}
 
@@ -199,6 +204,9 @@ public class InitDestroyAnnotationBeanPostProcessor
 	private LifecycleMetadata findLifecycleMetadata(Class<?> clazz) {
 		if (this.lifecycleMetadataCache == null) {
 			// Happens after deserialization, during destruction...
+			/**
+			 * 收集PostConstruct和PreDestory注解-3
+			 */
 			return buildLifecycleMetadata(clazz);
 		}
 		// Quick check on the concurrent map first, with minimal locking.
@@ -221,6 +229,9 @@ public class InitDestroyAnnotationBeanPostProcessor
 			return this.emptyLifecycleMetadata;
 		}
 
+		/**
+		* 收集PostConstruct和PreDestory注解-4
+		*/
 		List<LifecycleElement> initMethods = new ArrayList<>();
 		List<LifecycleElement> destroyMethods = new ArrayList<>();
 		Class<?> targetClass = clazz;
@@ -251,6 +262,7 @@ public class InitDestroyAnnotationBeanPostProcessor
 		}
 		while (targetClass != null && targetClass != Object.class);
 
+		//完成手机
 		return (initMethods.isEmpty() && destroyMethods.isEmpty() ? this.emptyLifecycleMetadata :
 				new LifecycleMetadata(clazz, initMethods, destroyMethods));
 	}

@@ -380,6 +380,12 @@ public interface AutowireCapableBeanFactory extends BeanFactory {
 	Object resolveDependency(DependencyDescriptor descriptor, @Nullable String requestingBeanName) throws BeansException;
 
 	/**
+	 * 针对这个方法，
+	 * 如果触发的时候，会调用getBean()方法，
+	 * 一般多用于：
+	 * 1.类的方法（构造方法或其他方法）属性装配；
+	 * 2.类的成员变量依赖注入
+	 *
 	 * Resolve the specified dependency against the beans defined in this factory.
 	 * @param descriptor the descriptor for the dependency (field/method/constructor)
 	 * @param requestingBeanName the name of the bean which declares the given dependency

@@ -196,8 +196,13 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 	 */
 	public CommonAnnotationBeanPostProcessor() {
 		setOrder(Ordered.LOWEST_PRECEDENCE - 3);
+
+		//初始化PostConstruct注解，字段声明在父类中
 		setInitAnnotationType(PostConstruct.class);
+		//初始化PreDestroy注解，字段声明在父类中
 		setDestroyAnnotationType(PreDestroy.class);
+
+
 		ignoreResourceType("javax.xml.ws.WebServiceContext");
 	}
 
@@ -291,8 +296,28 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		/**
+		 * 只是注解收集
+		 *
+		 * 在这个类的构造函数中，
+		 * 初始化了PostConstruct和PreDestory注解
+		 * 会初始化这个注解
+		 * 会在super中收集2个注解
+		 *
+		 */
+
+
+		/**
+		 * super是做了Lifecycle的收集：findLifecycleMetadata(beanType)
+		 * 收集PostConstruct和PreDestory注解-1
+		 */
 		super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
+
+		/**
+		 * 这里做了Resource的收集
+		 */
 		InjectionMetadata metadata = findResourceMetadata(beanName, beanType, null);
+
 		metadata.checkConfigMembers(beanDefinition);
 	}
 
