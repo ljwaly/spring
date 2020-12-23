@@ -460,6 +460,9 @@ public abstract class ReflectionUtils {
 		Method[] result = declaredMethodsCache.get(clazz);
 		if (result == null) {
 			try {
+				/**
+				 * 拿到所有的方法
+				 */
 				Method[] declaredMethods = clazz.getDeclaredMethods();
 				List<Method> defaultMethods = findConcreteMethodsOnInterfaces(clazz);
 				if (defaultMethods != null) {
@@ -663,6 +666,7 @@ public abstract class ReflectionUtils {
 	 * @see #doWithFields
 	 */
 	public static void doWithLocalFields(Class<?> clazz, FieldCallback fc) {
+		//拿到类中的所有属性和方法
 		for (Field field : getDeclaredFields(clazz)) {
 			try {
 				fc.doWith(field);

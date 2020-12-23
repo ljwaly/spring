@@ -597,6 +597,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 * 2.@Autowired有参构造方法
 			 * 3.@Autowired无参构造方法
 			 * 4.默认无参构造方法
+			 * 5.在这里分配了空间，但是各个属性还没有初始化，后续方法会进行初始化
 			 *
 			 */
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
@@ -620,7 +621,21 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
+					/**
+					 * 重要程度5
+					 *
+					 * 主要作用收集注解
+					 *
+					 *
+					 * CommonAnnotationBeanPostProcessor 支持了@PostConstruct, @PreDestroy, @Resource注解
+					 * AutowiredAnnotationBeanPostProcessor 支持了@Autowired, @Value注解
+					 * BeanPostProcessor 接口的运用，智力要理解这个接口--后置处理器
+					 * 对类注解的装配过程
+					 * 重要程度5
+					 */
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
+
+
 				}
 				catch (Throwable ex) {
 					throw new BeanCreationException(mbd.getResourceDescription(), beanName,
@@ -664,9 +679,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 * 初始化成员变量
 			 * 主要扫描的注解
 			 * 通过BeanPostProcessor实现:对应方法是postProcessProperties()
-			 *
-			 * @Autowired
-			 * @Resource
+
 			 *
 			 */
 			populateBean(beanName, mbd, instanceWrapper);
@@ -675,7 +688,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			/**
 			 * 处理
 			 * bean初始化成员变量之后的，后置方法处理
-			 * @PostConstrust
 			 * init-method,
 			 * afterPropertySet()
 			 *
@@ -1191,9 +1203,18 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @see MergedBeanDefinitionPostProcessor#postProcessMergedBeanDefinition
 	 */
 	protected void applyMergedBeanDefinitionPostProcessors(RootBeanDefinition mbd, Class<?> beanType, String beanName) {
+
+		/**
+		 * BeanPostProcessor的接口运用，这几个BeanPostProcessor是在registerBeanPostProcessor时候加载的
+		 */
 		for (BeanPostProcessor bp : getBeanPostProcessors()) {
 			if (bp instanceof MergedBeanDefinitionPostProcessor) {
+				//只处理MergedBeanDefinitionPostProcessor的子类
 				MergedBeanDefinitionPostProcessor bdp = (MergedBeanDefinitionPostProcessor) bp;
+
+				/**
+				 * 各个BeanPostProcessor去搜集自己所能识别的注解
+				 */
 				bdp.postProcessMergedBeanDefinition(mbd, beanType, beanName);
 			}
 		}
@@ -1320,7 +1341,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Candidate constructors for autowiring?
 		/**
-		 * 2.实例化@Autowired注解有参构造方法
+		 * 2.实例化@Autowired注解有参构造方法,还会实例化只有一个构造方法的无@Autowired的有参构造方法
 		 * (1).这里通过几种BeanPostProcessor来寻找构造方法（component-scan装配的时候，加入的几个BeanPostProcessor（Autowired，Common））
 		 */
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
