@@ -714,6 +714,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 			/**
 			 * DI-核心代码-5
+			 *
 			 * 此时为字段DI注入
 			 */
 
@@ -793,6 +794,14 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 		@Override
 		protected void inject(Object bean, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
+			/**
+			 * 依赖注入-5
+			 * 方法的依赖注入
+			 *
+			 *
+			 */
+
+
 			if (checkPropertySkipping(pvs)) {
 				return;
 			}
@@ -815,11 +824,16 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					currDesc.setContainingClass(bean.getClass());
 					descriptors[i] = currDesc;
 					try {
+
+						/**
+						 * 这里对方法的参数进行getBean实例化处理
+						 */
 						Object arg = beanFactory.resolveDependency(currDesc, beanName, autowiredBeans, typeConverter);
 						if (arg == null && !this.required) {
 							arguments = null;
 							break;
 						}
+						//方法入参初始化到对应的数组里面，如果是引用类型，就是对象（的地址）
 						arguments[i] = arg;
 					}
 					catch (BeansException ex) {
@@ -854,7 +868,10 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			}
 			if (arguments != null) {
 				try {
+					// 将方法变为可以访问
 					ReflectionUtils.makeAccessible(method);
+
+					//反射调用
 					method.invoke(bean, arguments);
 				}
 				catch (InvocationTargetException ex) {

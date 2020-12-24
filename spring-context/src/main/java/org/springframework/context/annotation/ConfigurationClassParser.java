@@ -702,12 +702,20 @@ class ConfigurationClassParser {
 		private final MultiValueMap<String, AnnotationMetadata> imports = new LinkedMultiValueMap<>();
 
 		public void registerImport(AnnotationMetadata importingClass, String importedClass) {
+			/**
+			 * ConfigurationClassPostProcessor中有调用这个方法
+			 *
+			 * 当使用@Import注解的时候，就会调用这个方法，
+			 * 向这个容器中加值
+			 */
 			this.imports.add(importedClass, importingClass);
 		}
 
 		@Override
 		@Nullable
 		public AnnotationMetadata getImportingClassFor(String importedClass) {
+
+			//这个集合只能收集到@Import注解注入的ImportAware的实现类
 			return CollectionUtils.lastElement(this.imports.get(importedClass));
 		}
 

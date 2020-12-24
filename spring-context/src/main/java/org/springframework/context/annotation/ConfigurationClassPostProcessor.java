@@ -453,9 +453,31 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		@Override
 		public Object postProcessBeforeInitialization(Object bean, String beanName) {
 			if (bean instanceof ImportAware) {
+				/**
+				 * 实现了ImportAware的实现类
+				 */
+
+
+				/**
+				 * 实现了ImportRegistry的实例只有一个，spring内部，
+				 * ImportRegistry是非public的
+				 *
+				 */
 				ImportRegistry ir = this.beanFactory.getBean(IMPORT_REGISTRY_BEAN_NAME, ImportRegistry.class);
+
+				/**
+				 * 强调说明
+				 *
+				 * 通过这个方法拿到AnnotationMetadata对象
+				 * 只有用@Import注解导入ImportAware实现类的方式，才能拿到AnnotationMetadata对象
+				 * 如果使用在ImportAware实现类上面加@Component方式，此时拿到AnnotationMetadata对象为空
+				 */
 				AnnotationMetadata importingClass = ir.getImportingClassFor(ClassUtils.getUserClass(bean).getName());
+
+
 				if (importingClass != null) {
+
+					//才会调用到这个setImportMetadata()方法,可以在外部拿到AnnotationMetadata对象
 					((ImportAware) bean).setImportMetadata(importingClass);
 				}
 			}

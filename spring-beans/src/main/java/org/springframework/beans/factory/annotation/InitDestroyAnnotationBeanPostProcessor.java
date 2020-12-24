@@ -157,8 +157,19 @@ public class InitDestroyAnnotationBeanPostProcessor
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+
+		/**
+		 * 拿到Lifecycle的注解对象
+		 * 关联Bean的声明周期
+		 * PostConstruct注解
+		 * PreDestroy注解
+		 */
 		LifecycleMetadata metadata = findLifecycleMetadata(bean.getClass());
+
+
 		try {
+
+			// 调用注解注释的方法
 			metadata.invokeInitMethods(bean, beanName);
 		}
 		catch (InvocationTargetException ex) {
@@ -342,6 +353,10 @@ public class InitDestroyAnnotationBeanPostProcessor
 					if (logger.isTraceEnabled()) {
 						logger.trace("Invoking init method on bean '" + beanName + "': " + element.getMethod());
 					}
+
+					/**
+					 * LifecycleElement的对象调用
+					 */
 					element.invoke(target);
 				}
 			}
@@ -397,7 +412,14 @@ public class InitDestroyAnnotationBeanPostProcessor
 		}
 
 		public void invoke(Object target) throws Throwable {
+
+			// 反射使得方法可以调用
 			ReflectionUtils.makeAccessible(this.method);
+
+			/**
+			 * 方法反射调用试实现，从这个参数列表可以看出来，
+			 * 要求为空参数方法 @PostConstruct, @PreDestory
+			 */
 			this.method.invoke(target, (Object[]) null);
 		}
 
