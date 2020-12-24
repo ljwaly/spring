@@ -90,6 +90,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	/** Cache of early singleton objects: bean name to bean instance. */
 	/**
 	 * 单例的二级缓存
+	 * 当一个对象被多次循环依赖的时候，二级缓存起作用
 	 */
 	private final Map<String, Object> earlySingletonObjects = new HashMap<>(16);
 
@@ -149,9 +150,21 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	protected void addSingleton(String beanName, Object singletonObject) {
 		synchronized (this.singletonObjects) {
+			/**
+			 * 一级缓存
+			 */
 			this.singletonObjects.put(beanName, singletonObject);
+			/**
+			 * 三级缓存
+			 */
 			this.singletonFactories.remove(beanName);
+			/**
+			 * 二级缓存
+			 */
 			this.earlySingletonObjects.remove(beanName);
+			/**
+			 * 提供给外部的统计，比如bean的数量
+			 */
 			this.registeredSingletons.add(beanName);
 		}
 	}
@@ -167,9 +180,17 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	protected void addSingletonFactory(String beanName, ObjectFactory<?> singletonFactory) {
 		Assert.notNull(singletonFactory, "Singleton factory must not be null");
 		synchronized (this.singletonObjects) {
+
+			/**
+			 * 如果一级缓存不存在
+			 */
 			if (!this.singletonObjects.containsKey(beanName)) {
+				//放入三级缓存
 				this.singletonFactories.put(beanName, singletonFactory);
+
+				//二级缓存清楚
 				this.earlySingletonObjects.remove(beanName);
+
 				this.registeredSingletons.add(beanName);
 			}
 		}
@@ -265,6 +286,10 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 
 					//如果这里有返回值，表示这个bean已经被创建成功
 					//在这个地方，进行接口回调lambda表达式
+					/**
+					 * 如果这里有返回值，表示这个bean已经被创建成功
+					 * bean完全创建成了
+					 */
 					singletonObject = singletonFactory.getObject();
 					newSingleton = true;
 				}
@@ -288,12 +313,23 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					if (recordSuppressedExceptions) {
 						this.suppressedExceptions = null;
 					}
+					/**
+					 * bean创建完成之后，会在正在创建的bean的缓存中的删除
+					 */
 					afterSingletonCreation(beanName);
 				}
 
 
 
 				if (newSingleton) {
+
+					/**
+					 * 如果创建成功
+					 * 就会把bean放入一级缓存
+					 * getBean操作完全完成
+					 * 完成了bean的实例化
+					 *
+					 */
 					addSingleton(beanName, singletonObject);
 				}
 			}

@@ -685,7 +685,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		/**
 		 * 是否单例bean提前暴露
 		 * 这里解决循环依赖的问题
-		 *
+		 * 3个条件：
+		 * 1.单例
+		 * 2.允许循环依赖
+		 * 3.正在被创建的Bean
 		 *
 		 */
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
@@ -699,7 +702,18 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			/**
 			 * 重要程度5,
 			 * 这里对理解循环依赖帮助比较大
-			 * 添加三级缓存
+			 *
+			 * 添加三级缓存，
+			 *   在循环依赖的时候，A对象将在这里将分配好内存地址的对象a，
+			 *   对象a对应的对象工厂（通过回调方法生成的对象工厂）放入三级缓存，
+			 *   相当于把回调方法放入了三级缓存。
+			 *   当对象A进行后置方法初始化成员变量B的时候，B触发getBean(),进行初始化
+			 *   B创建的时候，进行后置方法初始化成员变量A，再次触发A的getBean(),相当于A的第二次初始化
+			 *   A第二次初始化，从缓存中获取对象是，从三级缓存拿到这个对象工厂（回调方法），
+			 *   回调方法对第一次A初始化的半残对象a进行一些处理装饰（如：可以进行代理类A的对象），返回
+			 *   B拿到A的第一次初始化半残对象，完成初始化，B创建bean成功
+			 *   此时，A继续第一次的初始化，装配B，完成A的最终初始化
+			 *
 			 */
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
@@ -1118,6 +1132,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	protected Object getEarlyBeanReference(String beanName, RootBeanDefinition mbd, Object bean) {
 		Object exposedObject = bean;
+		/**
+		 * 循环依赖，
+		 */
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
