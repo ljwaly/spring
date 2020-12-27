@@ -129,19 +129,36 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 		if (this.propertySources == null) {
 			this.propertySources = new MutablePropertySources();
 			if (this.environment != null) {
+				//把Environment对象封装成的PropertySource对象加入到
 				this.propertySources.addLast(
+						/**
+						 *  把Environment对象封装成的PropertySource对象加入到对象MutablePropertySources中的list
+						 */ 
 					new PropertySource<Environment>(ENVIRONMENT_PROPERTIES_PROPERTY_SOURCE_NAME, this.environment) {
 						@Override
 						@Nullable
 						public String getProperty(String key) {
+							/**
+							 * SPEL表达式的解析
+							 * environment体系的
+							 * sourcej就是Environment对象
+							 */
 							return this.source.getProperty(key);
 						}
 					}
 				);
 			}
 			try {
+				/**
+				 * 加载本地配置文件中的属性值，包装成properties对象后，最终包装成PropertySource对象
+				 */
 				PropertySource<?> localPropertySource =
 						new PropertiesPropertySource(LOCAL_PROPERTIES_PROPERTY_SOURCE_NAME, mergeProperties());
+				/**
+				 * SPEL表达式的解析
+				 * 配置文件的体系的
+				 * 加入到对象MutablePropertySources中的list
+				 */
 				if (this.localOverride) {
 					this.propertySources.addFirst(localPropertySource);
 				}
