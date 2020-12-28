@@ -159,7 +159,15 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	 */
 	@SuppressWarnings("unchecked")
 	public AutowiredAnnotationBeanPostProcessor() {
+
+		/**
+		 * 搜索处理Autowired注解
+		 */
 		this.autowiredAnnotationTypes.add(Autowired.class);
+
+		/**
+		 * 搜索处理@Value注解
+		 */
 		this.autowiredAnnotationTypes.add(Value.class);
 		try {
 			this.autowiredAnnotationTypes.add((Class<? extends Annotation>)
@@ -607,7 +615,10 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		MergedAnnotations annotations = MergedAnnotations.from(ao);
 		for (Class<? extends Annotation> type : this.autowiredAnnotationTypes) {
 			MergedAnnotation<?> annotation = annotations.get(type);
-			//判断是否有Autowired的注解，有的话，直接返回
+			/**
+			 * 判断是否有目标注解被搜索到
+			 * 注解包含：@Autowired和@Value中的任何一种
+			 */
 			if (annotation.isPresent()) {
 				return annotation;
 			}

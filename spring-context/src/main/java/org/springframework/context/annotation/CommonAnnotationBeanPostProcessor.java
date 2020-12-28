@@ -299,9 +299,9 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 		/**
 		 * 只是注解收集
 		 *
-		 * 在这个类的构造函数中，
+		 * 构造函数中，
 		 * 初始化了PostConstruct和PreDestory注解
-		 * 会初始化这个注解
+		 * 会初始化搜集
 		 * 会在super中收集2个注解
 		 *
 		 */
@@ -314,7 +314,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 		super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
 
 		/**
-		 * 这里做了Resource的收集
+		 * 这里做了@Resource的收集
 		 */
 		InjectionMetadata metadata = findResourceMetadata(beanName, beanType, null);
 

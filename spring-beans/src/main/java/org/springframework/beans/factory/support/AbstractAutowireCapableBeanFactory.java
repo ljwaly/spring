@@ -1275,6 +1275,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				MergedBeanDefinitionPostProcessor bdp = (MergedBeanDefinitionPostProcessor) bp;
 
 				/**
+				 * CommonAnnotationBeanPostProcessor 支持了（父类方法）@PostConstruct, @PreDestroy, （本身方法）@Resource注解
+				 * AutowiredAnnotationBeanPostProcessor 支持了@Autowired, @Value注解
+				 *
 				 * 各个BeanPostProcessor去搜集自己所能识别的注解
 				 */
 				bdp.postProcessMergedBeanDefinition(mbd, beanType, beanName);
