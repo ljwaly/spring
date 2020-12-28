@@ -772,12 +772,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 
-
-
-
-
-
-
+		/**
+		 * 此处相关是Aop处理
+		 *
+		 */
 		if (earlySingletonExposure) {
 			Object earlySingletonReference = getSingleton(beanName, false);
 			if (earlySingletonReference != null) {
@@ -805,8 +803,18 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
+
+
+
+
 		// Register bean as disposable.
 		try {
+			/**
+			 * 注册bean销毁时的类DisposableBeanAdapter
+			 *
+			 *
+			 * 注册销毁方法
+			 */
 			registerDisposableBeanIfNecessary(beanName, bean, mbd);
 		}
 		catch (BeanDefinitionValidationException ex) {

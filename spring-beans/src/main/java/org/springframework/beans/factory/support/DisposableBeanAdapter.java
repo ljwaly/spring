@@ -101,6 +101,9 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 	public DisposableBeanAdapter(Object bean, String beanName, RootBeanDefinition beanDefinition,
 			List<BeanPostProcessor> postProcessors, @Nullable AccessControlContext acc) {
 
+		/**
+		 * 搜集销毁方法的注解-1
+		 */
 		Assert.notNull(bean, "Disposable bean must not be null");
 		this.bean = bean;
 		this.beanName = beanName;
@@ -133,6 +136,11 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 			}
 			this.destroyMethod = destroyMethod;
 		}
+
+		/**
+		 * 搜集销毁方法的注解-2
+		 * 将搜集到的放入待处理的容器
+		 */
 		this.beanPostProcessors = filterPostProcessors(postProcessors, bean);
 	}
 
@@ -216,9 +224,12 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 	private List<DestructionAwareBeanPostProcessor> filterPostProcessors(List<BeanPostProcessor> processors, Object bean) {
 		List<DestructionAwareBeanPostProcessor> filteredPostProcessors = null;
 		if (!CollectionUtils.isEmpty(processors)) {
+
+
 			filteredPostProcessors = new ArrayList<>(processors.size());
 			for (BeanPostProcessor processor : processors) {
 				if (processor instanceof DestructionAwareBeanPostProcessor) {
+
 					DestructionAwareBeanPostProcessor dabpp = (DestructionAwareBeanPostProcessor) processor;
 					if (dabpp.requiresDestruction(bean)) {
 						filteredPostProcessors.add(dabpp);
@@ -237,6 +248,11 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 
 	@Override
 	public void destroy() {
+
+		/**
+		 * 容器销毁的时候，进行调用
+		 */
+
 		if (!CollectionUtils.isEmpty(this.beanPostProcessors)) {
 			for (DestructionAwareBeanPostProcessor processor : this.beanPostProcessors) {
 				processor.postProcessBeforeDestruction(this.bean, this.beanName);

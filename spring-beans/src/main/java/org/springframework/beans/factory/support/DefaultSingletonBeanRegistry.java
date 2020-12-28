@@ -116,6 +116,11 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	private boolean singletonsCurrentlyInDestruction = false;
 
 	/** Disposable bean instances: bean name to disposable instance. */
+	/**
+	 * 销毁时候，将需要处理的方法的bean放入对应的处理容器
+	 *
+	 * 只有当销毁spring容器的时候，才会触发destory方法
+	 */
 	private final Map<String, Object> disposableBeans = new LinkedHashMap<>();
 
 	/** Map between containing bean names: bean name to Set of bean names that the bean contains. */
@@ -453,6 +458,12 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 */
 	public void registerDisposableBean(String beanName, DisposableBean bean) {
 		synchronized (this.disposableBeans) {
+
+			/**
+			 * 销毁时候，将需要处理的方法的bean放入对应的处理容器
+			 *
+			 * 只有当销毁spring容器的时候，才会触发destory方法
+			 */
 			this.disposableBeans.put(beanName, bean);
 		}
 	}
@@ -577,6 +588,14 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		}
 	}
 
+
+	/**
+	 * 通过上下文ApplicationContext获取beanFactory，然后调用这个方法
+	 *
+	 * 调用方式：
+	 * applicationContext.getBeanFactory().destroySingletons();
+	 *
+	 */
 	public void destroySingletons() {
 		if (logger.isTraceEnabled()) {
 			logger.trace("Destroying singletons in " + this);
@@ -586,10 +605,22 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		}
 
 		String[] disposableBeanNames;
+
+		/**
+		 * 拿到所有有销毁方法的beans
+		 * bean和destroyAdapter的关系
+		 */
 		synchronized (this.disposableBeans) {
 			disposableBeanNames = StringUtils.toStringArray(this.disposableBeans.keySet());
 		}
+
+
+
 		for (int i = disposableBeanNames.length - 1; i >= 0; i--) {
+
+			/**
+			 * 依次处理每一个destroy方法
+			 */
 			destroySingleton(disposableBeanNames[i]);
 		}
 
@@ -629,6 +660,10 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		synchronized (this.disposableBeans) {
 			disposableBean = (DisposableBean) this.disposableBeans.remove(beanName);
 		}
+
+		/**
+		 * 调用destroyBean方法
+		 */
 		destroyBean(beanName, disposableBean);
 	}
 
@@ -657,6 +692,11 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		// Actually destroy the bean now...
 		if (bean != null) {
 			try {
+
+
+				/**
+				 * 在这里调用bean的destroy方法
+				 */
 				bean.destroy();
 			}
 			catch (Throwable ex) {

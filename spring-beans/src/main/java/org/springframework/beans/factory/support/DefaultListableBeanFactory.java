@@ -1104,6 +1104,12 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		clearByTypeCache();
 	}
 
+	/**
+	 * 所有对象摧毁的时候，调用
+	 * destroy
+	 *
+	 * @param beanName
+	 */
 	@Override
 	public void destroySingletons() {
 		super.destroySingletons();
@@ -1111,6 +1117,12 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		clearByTypeCache();
 	}
 
+	/**
+	 * 对象摧毁的时候，调用
+	 * destroy
+	 *
+	 * @param beanName
+	 */
 	@Override
 	public void destroySingleton(String beanName) {
 		super.destroySingleton(beanName);
