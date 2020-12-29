@@ -89,14 +89,21 @@ public abstract class PropertiesLoaderUtils {
 			String filename = resource.getResource().getFilename();
 			if (filename != null && filename.endsWith(XML_FILE_EXTENSION)) {
 				stream = resource.getInputStream();
+
+				//加载配置参数
 				persister.loadFromXml(props, stream);
 			}
 			else if (resource.requiresReader()) {
 				reader = resource.getReader();
+
+				//加载配置参数
 				persister.load(props, reader);
 			}
 			else {
 				stream = resource.getInputStream();
+
+
+				//加载配置参数
 				persister.load(props, stream);
 			}
 		}

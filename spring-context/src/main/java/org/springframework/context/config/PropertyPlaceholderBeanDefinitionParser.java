@@ -38,6 +38,12 @@ class PropertyPlaceholderBeanDefinitionParser extends AbstractPropertyLoadingBea
 	private static final String SYSTEM_PROPERTIES_MODE_DEFAULT = "ENVIRONMENT";
 
 
+	/**
+	 * 关注是哪个类进行参数的解析
+	 *
+	 * @param element
+	 * @return
+	 */
 	@Override
 	@SuppressWarnings("deprecation")
 	protected Class<?> getBeanClass(Element element) {
@@ -52,7 +58,11 @@ class PropertyPlaceholderBeanDefinitionParser extends AbstractPropertyLoadingBea
 		 */
 		if (SYSTEM_PROPERTIES_MODE_DEFAULT.equals(element.getAttribute(SYSTEM_PROPERTIES_MODE_ATTRIBUTE))) {
 			/**
-			 * 相比老的，多了environment的解析处理
+			 * 相比老的，多了environment的解析处理:
+			 * 1.Location配置文件解析（*.properties）
+			 * 2.Environment的配置解析
+			 *
+			 * 这个类是解析的关键类*
 			 */
 			return PropertySourcesPlaceholderConfigurer.class;
 		}
@@ -60,6 +70,10 @@ class PropertyPlaceholderBeanDefinitionParser extends AbstractPropertyLoadingBea
 		// The user has explicitly specified a value for system-properties-mode: revert to
 		// PropertyPlaceholderConfigurer to ensure backward compatibility with 3.0 and earlier.
 		// This is deprecated; to be removed along with PropertyPlaceholderConfigurer itself.
+		/**
+		 * 已经过时
+		 * 只有Location配置文件解析
+		 */
 		return org.springframework.beans.factory.config.PropertyPlaceholderConfigurer.class;
 	}
 

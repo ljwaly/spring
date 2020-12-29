@@ -81,9 +81,21 @@ public class BeanDefinitionVisitor {
 		visitFactoryBeanName(beanDefinition);
 		visitFactoryMethodName(beanDefinition);
 		visitScope(beanDefinition);
+
+
 		if (beanDefinition.hasPropertyValues()) {
+
+			/**
+			 * 核心代码替换-2
+			 * xml配置的${}走到这里了
+			 * 如果BeanDefinition有属性值，则把占位符替换成真正属性值
+			 */
 			visitPropertyValues(beanDefinition.getPropertyValues());
 		}
+
+		/**
+		 * 构造函数占位符
+		 */
 		if (beanDefinition.hasConstructorArgumentValues()) {
 			ConstructorArgumentValues cas = beanDefinition.getConstructorArgumentValues();
 			visitIndexedArgumentValues(cas.getIndexedArgumentValues());
@@ -144,7 +156,14 @@ public class BeanDefinitionVisitor {
 	protected void visitPropertyValues(MutablePropertyValues pvs) {
 		PropertyValue[] pvArray = pvs.getPropertyValues();
 		for (PropertyValue pv : pvArray) {
+
+			/**
+			 * 核心代码替换-3
+			 * 关键代码，进行替换
+			 */
 			Object newVal = resolveValue(pv.getValue());
+
+
 			if (!ObjectUtils.nullSafeEquals(newVal, pv.getValue())) {
 				pvs.add(pv.getName(), newVal);
 			}
@@ -219,6 +238,13 @@ public class BeanDefinitionVisitor {
 			}
 		}
 		else if (value instanceof String) {
+
+
+			/**
+			 * 核心代码替换-4
+			 *
+			 * 针对String的占位符进行替换
+			 */
 			return resolveStringValue((String) value);
 		}
 		return value;
@@ -293,7 +319,13 @@ public class BeanDefinitionVisitor {
 			throw new IllegalStateException("No StringValueResolver specified - pass a resolver " +
 					"object into the constructor or override the 'resolveStringValue' method");
 		}
+		/**
+		 * 核心代码替换-5：  此时激发valueResolver回调方法
+		 */
 		String resolvedValue = this.valueResolver.resolveStringValue(strVal);
+
+
+		
 		// Return original String if not modified.
 		return (strVal.equals(resolvedValue) ? strVal : resolvedValue);
 	}

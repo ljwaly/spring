@@ -124,8 +124,20 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 	 * ignored</strong>. This method is designed to give the user fine-grained control over property
 	 * sources, and once set, the configurer makes no assumptions about adding additional sources.
 	 */
+	/**
+	 * 新版本执行参数解析的过程
+	 *
+	 * @param beanFactory
+	 * @throws BeansException
+	 */
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+		/**
+		 * 实现了BeanFactroyPostProcessor接口
+		 *
+		 * 启动时候，会调用这个方法
+		 */
+
 		if (this.propertySources == null) {
 			this.propertySources = new MutablePropertySources();
 			if (this.environment != null) {
@@ -133,15 +145,19 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 				this.propertySources.addLast(
 						/**
 						 *  把Environment对象封装成的PropertySource对象加入到对象MutablePropertySources中的list
+						 *
+						 *  lambda表达式相当于：
+						 *  对目标对象或者接口写了一个继承的子类的匿名对象，
+						 *  子类实现了目标对象或者接口的某一个抽象方法
+						 *
 						 */ 
 					new PropertySource<Environment>(ENVIRONMENT_PROPERTIES_PROPERTY_SOURCE_NAME, this.environment) {
 						@Override
 						@Nullable
 						public String getProperty(String key) {
 							/**
-							 * SPEL表达式的解析
 							 * environment体系的
-							 * sourcej就是Environment对象
+							 * source就是Environment对象
 							 */
 							return this.source.getProperty(key);
 						}
@@ -151,15 +167,19 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 			try {
 				/**
 				 * 加载本地配置文件中的属性值，包装成properties对象后，最终包装成PropertySource对象
+				 *
+				 * mergeProperties()进行本地配置文件的加载
+				 * 将PropertySource对象加入
+				 *
 				 */
 				PropertySource<?> localPropertySource =
 						new PropertiesPropertySource(LOCAL_PROPERTIES_PROPERTY_SOURCE_NAME, mergeProperties());
 				/**
-				 * SPEL表达式的解析
 				 * 配置文件的体系的
 				 * 加入到对象MutablePropertySources中的list
 				 */
 				if (this.localOverride) {
+					//将加载好的属性放入source中
 					this.propertySources.addFirst(localPropertySource);
 				}
 				else {
@@ -171,7 +191,13 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 			}
 		}
 
+		/**
+		 * 对加载到的属性进行解析替换（${}）
+		 *
+		 */
 		processProperties(beanFactory, new PropertySourcesPropertyResolver(this.propertySources));
+
+
 		this.appliedPropertySources = this.propertySources;
 	}
 
@@ -182,13 +208,25 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 	protected void processProperties(ConfigurableListableBeanFactory beanFactoryToProcess,
 			final ConfigurablePropertyResolver propertyResolver) throws BeansException {
 
+		//设置占位符前缀
 		propertyResolver.setPlaceholderPrefix(this.placeholderPrefix);
+
+		//设置占位符后缀
 		propertyResolver.setPlaceholderSuffix(this.placeholderSuffix);
+
+		//设置分隔符 冒号分隔符
 		propertyResolver.setValueSeparator(this.valueSeparator);
 
+
+		/**
+		 * 重点是@Value对象会调用到这里
+		 */
 		StringValueResolver valueResolver = strVal -> {
 			String resolved = (this.ignoreUnresolvablePlaceholders ?
 					propertyResolver.resolvePlaceholders(strVal) :
+					/**
+					 * debug会调用到这里-1： 这里传入的ValueResolver会在最终核心流程触发执行
+					 */
 					propertyResolver.resolveRequiredPlaceholders(strVal));
 			if (this.trimValues) {
 				resolved = resolved.trim();
@@ -196,6 +234,10 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 			return (resolved.equals(this.nullValue) ? null : resolved);
 		};
 
+		/**
+		 * 核心流程
+		 * 替换占位符${}为真正的值
+		 */
 		doProcessProperties(beanFactoryToProcess, valueResolver);
 	}
 

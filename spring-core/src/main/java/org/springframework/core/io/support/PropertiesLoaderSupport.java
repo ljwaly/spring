@@ -148,6 +148,9 @@ public abstract class PropertiesLoaderSupport {
 
 		if (this.localOverride) {
 			// Load properties from file upfront, to let local properties override.
+			/**
+			 * 加载classPath下的properties
+			 */
 			loadProperties(result);
 		}
 
@@ -173,11 +176,19 @@ public abstract class PropertiesLoaderSupport {
 	 */
 	protected void loadProperties(Properties props) throws IOException {
 		if (this.locations != null) {
+
+			/**
+			 * xml里面配置的location.properties
+			 */
 			for (Resource location : this.locations) {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Loading properties file from " + location);
 				}
 				try {
+
+					/**
+					 * 进行IO输入加载配置文件
+					 */
 					PropertiesLoaderUtils.fillProperties(
 							props, new EncodedResource(location, this.fileEncoding), this.propertiesPersister);
 				}

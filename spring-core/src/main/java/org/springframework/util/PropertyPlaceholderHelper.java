@@ -121,12 +121,18 @@ public class PropertyPlaceholderHelper {
 	 */
 	public String replacePlaceholders(String value, PlaceholderResolver placeholderResolver) {
 		Assert.notNull(value, "'value' must not be null");
+		/**
+		 * 核心代码占位符替换-7
+		 */
 		return parseStringValue(value, placeholderResolver, null);
 	}
 
 	protected String parseStringValue(
 			String value, PlaceholderResolver placeholderResolver, @Nullable Set<String> visitedPlaceholders) {
 
+		/**
+		 * 前缀处理
+		 */
 		int startIndex = value.indexOf(this.placeholderPrefix);
 		if (startIndex == -1) {
 			return value;
@@ -145,21 +151,48 @@ public class PropertyPlaceholderHelper {
 					throw new IllegalArgumentException(
 							"Circular placeholder reference '" + originalPlaceholder + "' in property definitions");
 				}
+
+
+
 				// Recursive invocation, parsing placeholders contained in the placeholder key.
+
+				/**
+				 * 这里进行递归：${${}}
+				 */
 				placeholder = parseStringValue(placeholder, placeholderResolver, visitedPlaceholders);
+
+
+
 				// Now obtain the value for the fully resolved key...
+				/**
+				 * 调用到this::getPropertyAsRawString 用来解析${property.name:ljw}这种结构-1
+				 */
 				String propVal = placeholderResolver.resolvePlaceholder(placeholder);
+
 				if (propVal == null && this.valueSeparator != null) {
 					int separatorIndex = placeholder.indexOf(this.valueSeparator);
 					if (separatorIndex != -1) {
 						String actualPlaceholder = placeholder.substring(0, separatorIndex);
+						/**
+						 * 获取冒号（:）后面的值
+						 */
 						String defaultValue = placeholder.substring(separatorIndex + this.valueSeparator.length());
+						/**
+						 * 获取冒号（:）前面的值
+						 */
 						propVal = placeholderResolver.resolvePlaceholder(actualPlaceholder);
+
+						/**
+						 * 如果解析不到，则使用默认值
+						 */
 						if (propVal == null) {
 							propVal = defaultValue;
 						}
 					}
 				}
+
+
+				
 				if (propVal != null) {
 					// Recursive invocation, parsing placeholders contained in the
 					// previously resolved placeholder value.

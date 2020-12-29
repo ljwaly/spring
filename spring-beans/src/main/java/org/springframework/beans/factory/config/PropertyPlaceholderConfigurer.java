@@ -227,6 +227,9 @@ public class PropertyPlaceholderConfigurer extends PlaceholderConfigurerSupport 
 		@Override
 		@Nullable
 		public String resolveStringValue(String strVal) throws BeansException {
+			/**
+			 * 核心代码占位符替换-6
+			 */
 			String resolved = this.helper.replacePlaceholders(strVal, this.resolver);
 			if (trimValues) {
 				resolved = resolved.trim();
@@ -247,6 +250,9 @@ public class PropertyPlaceholderConfigurer extends PlaceholderConfigurerSupport 
 		@Override
 		@Nullable
 		public String resolvePlaceholder(String placeholderName) {
+			/**
+			 * 用来解析${property.name:ljw}这种结构-2
+			 */
 			return PropertyPlaceholderConfigurer.this.resolvePlaceholder(placeholderName,
 					this.props, systemPropertiesMode);
 		}

@@ -316,6 +316,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	@Override
 	public ConfigurableEnvironment getEnvironment() {
 		if (this.environment == null) {
+			/**
+			 * 创建Environment
+			 */
 			this.environment = createEnvironment();
 		}
 		return this.environment;
@@ -327,6 +330,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * a custom {@link ConfigurableEnvironment} implementation.
 	 */
 	protected ConfigurableEnvironment createEnvironment() {
+		/**
+		 * 可以看到内部方法
+		 */
 		return new StandardEnvironment();
 	}
 
@@ -528,6 +534,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 			// Tell the subclass to refresh the internal bean factory.
 			/**
+			 * 核心方法 重要程度5
+			 *
 			 * 创建beanFactory
 			 *
 			 */
@@ -535,6 +543,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 			// Prepare the bean factory for use in this context.
 			/**
+			 * 核心方法 重要程度5
+			 *
 			 * 1.创建BeanFactory
 			 * 2.xml解析
 			 * 	 传统标签bean,import解析
@@ -713,7 +723,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #getBeanFactory()
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
+
+		/**
+		 * 核心方法，重要程度5
+		 *
+		 */
 		refreshBeanFactory();
+
 		return getBeanFactory();
 	}
 

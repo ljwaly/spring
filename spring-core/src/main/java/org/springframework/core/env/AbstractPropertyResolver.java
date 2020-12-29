@@ -207,6 +207,9 @@ public abstract class AbstractPropertyResolver implements ConfigurablePropertyRe
 		if (this.strictHelper == null) {
 			this.strictHelper = createPlaceholderHelper(false);
 		}
+		/**
+		 * debug会调用到这里-2
+		 */
 		return doResolvePlaceholders(text, this.strictHelper);
 	}
 
@@ -236,6 +239,9 @@ public abstract class AbstractPropertyResolver implements ConfigurablePropertyRe
 	}
 
 	private String doResolvePlaceholders(String text, PropertyPlaceholderHelper helper) {
+		/**
+		 * debug会调用到这里-3
+		 */
 		return helper.replacePlaceholders(text, this::getPropertyAsRawString);
 	}
 
