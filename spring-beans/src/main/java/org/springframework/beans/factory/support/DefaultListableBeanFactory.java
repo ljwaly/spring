@@ -891,9 +891,17 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 			//非抽象的，单例的，非延迟加载的 实例化
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
+
+
 				if (isFactoryBean(beanName)) {
+
+					/**
+					 * 实现FactoryBean的实例化-1
+					 *
+					 * 判断bean是否实现了FactoryBean接口
+					 * FactoryBean的getObject()
+					 */
 					Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
-					//判断bean是否实现了BeanFactory接口，可暂时不看
 					if (bean instanceof FactoryBean) {
 						FactoryBean<?> factory = (FactoryBean<?>) bean;
 						boolean isEagerInit;
@@ -910,16 +918,24 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							getBean(beanName);
 						}
 					}
+
+
 				}
+
+
 				else {
 
 					/**
+					 * 普通实例化
+					 *
 					 * 主要从这里开始，核心方法实例化
 					 * 核心方法
 					 * 实例化-1
 					 */
 					getBean(beanName);
 				}
+
+
 			}
 		}
 

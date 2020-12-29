@@ -272,7 +272,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 			}
 
-			//该方法是factoryBean接口调入的方法
+			/**
+			 * 该方法是factoryBean接口调入的方法-2
+			 *
+			 */
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
 
@@ -375,7 +378,17 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
 
+
+
+
 				else if (mbd.isPrototype()) {
+
+
+					/**
+					 * 如果是prototype类型的对象
+					 * 不管是单线程，还是多线程调用，每次拿到的getBean都不一样
+					 * 不会放缓存，每次都是重新创建对象
+					 */
 					// It's a prototype -> create a new instance.
 					Object prototypeInstance = null;
 					try {
@@ -388,7 +401,17 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					bean = getObjectForBeanInstance(prototypeInstance, name, beanName, mbd);
 				}
 
+
+
+
 				else {
+					/**
+					 * 自定义scope
+					 *
+					 *
+					 */
+
+
 					String scopeName = mbd.getScope();
 					if (!StringUtils.hasLength(scopeName)) {
 						throw new IllegalStateException("No scope name defined for bean ´" + beanName + "'");
@@ -1238,6 +1261,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * @return the transformed bean name
 	 */
 	protected String transformedBeanName(String name) {
+		/**
+		 * 处理FactoryBean的前缀&
+		 */
 		return canonicalName(BeanFactoryUtils.transformedBeanName(name));
 	}
 

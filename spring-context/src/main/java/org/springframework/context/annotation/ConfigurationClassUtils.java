@@ -90,11 +90,20 @@ abstract class ConfigurationClassUtils {
 		}
 
 		AnnotationMetadata metadata;
+
+		/**
+		 * 如果是扫描注解产生的BeanDefinition
+		 */
 		if (beanDef instanceof AnnotatedBeanDefinition &&
 				className.equals(((AnnotatedBeanDefinition) beanDef).getMetadata().getClassName())) {
 			// Can reuse the pre-parsed metadata from the given BeanDefinition...
+			/**
+			 * 所有的元注解信息都在这里
+			 */
 			metadata = ((AnnotatedBeanDefinition) beanDef).getMetadata();
 		}
+
+		//如果是非扫描注解产生的BeanDefinition
 		else if (beanDef instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) beanDef).hasBeanClass()) {
 			// Check already loaded Class if present...
 			// since we possibly can't even load the class file for this Class.
@@ -121,11 +130,18 @@ abstract class ConfigurationClassUtils {
 			}
 		}
 
+
+		/**
+		 * 从metadata中拿到Configuration中拿到所有的注解
+		 */
 		Map<String, Object> config = metadata.getAnnotationAttributes(Configuration.class.getName());
+
 		if (config != null && !Boolean.FALSE.equals(config.get("proxyBeanMethods"))) {
+			//如果有@Configuration注解，就是完全匹配标识
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
 		else if (config != null || isConfigurationCandidate(metadata)) {
+			//如果是有@Component，@ComponentScan, @Import, @ImportResource或者方法上有@Bean,就是lite匹配（一点点匹配）
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}
 		else {
@@ -133,6 +149,9 @@ abstract class ConfigurationClassUtils {
 		}
 
 		// It's a full or lite configuration candidate... Let's determine the order value, if any.
+		/**
+		 * 把注解的里面有@Order注解的拿出来，吧value放入BeanDefinition
+		 */
 		Integer order = getOrder(metadata);
 		if (order != null) {
 			beanDef.setAttribute(ORDER_ATTRIBUTE, order);
