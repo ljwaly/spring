@@ -100,6 +100,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	/** Names of beans that are currently in creation. */
 	/**
 	 * 正在创建的单例，会被统一放置在这个容器中
+	 * 针对同一个类，对应的实例，这个容器至多只有一个，再次尝试去放，就抛异常
 	 */
 	private final Set<String> singletonsCurrentlyInCreation =
 			Collections.newSetFromMap(new ConcurrentHashMap<>(16));
@@ -280,6 +281,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				 * 当单例的bean正在被创建的时候，
 				 */
 				beforeSingletonCreation(beanName);
+
+
+
 				boolean newSingleton = false;
 				boolean recordSuppressedExceptions = (this.suppressedExceptions == null);
 				if (recordSuppressedExceptions) {

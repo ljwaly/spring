@@ -1321,10 +1321,25 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 
 			Class<?> type = descriptor.getDependencyType();
+
+			/**
+			 * 处理@Value-1
+			 * 获取@Value中的值，拿到的值类似：${property.aba}
+			 */
 			Object value = getAutowireCandidateResolver().getSuggestedValue(descriptor);
+
+
+
 			if (value != null) {
 				if (value instanceof String) {
+
+					/**
+					 * 处理@Value-2
+					 *
+					 */
 					String strVal = resolveEmbeddedValue((String) value);
+
+
 					BeanDefinition bd = (beanName != null && containsBean(beanName) ?
 							getMergedBeanDefinition(beanName) : null);
 					value = evaluateBeanDefinitionString(strVal, bd);

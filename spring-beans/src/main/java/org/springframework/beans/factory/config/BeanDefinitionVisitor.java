@@ -76,6 +76,10 @@ public class BeanDefinitionVisitor {
 	 * @see #resolveStringValue(String)
 	 */
 	public void visitBeanDefinition(BeanDefinition beanDefinition) {
+		/**
+		 * 多种占位符的情况处理
+		 */
+
 		visitParentName(beanDefinition);
 		visitBeanClassName(beanDefinition);
 		visitFactoryBeanName(beanDefinition);

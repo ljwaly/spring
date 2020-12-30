@@ -1684,7 +1684,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					 *
 					 * DI-核心代码-2
 					 * 基于注解的依赖注入
-					 * 依赖注入过程，@Autowired的支持
+					 * 依赖注入过程，@Autowired的支持，@Value支持
 					 */
 					PropertyValues pvsToUse = ibp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName);
 					if (pvsToUse == null) {

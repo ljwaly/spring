@@ -530,6 +530,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		synchronized (this.startupShutdownMonitor) {
 			// Prepare this context for refreshing.
 
+			/**
+			 * 创建Environment
+			 */
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.

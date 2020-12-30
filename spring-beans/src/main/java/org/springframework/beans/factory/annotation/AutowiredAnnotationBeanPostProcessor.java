@@ -169,6 +169,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		 * 搜索处理@Value注解
 		 */
 		this.autowiredAnnotationTypes.add(Value.class);
+
+
+
 		try {
 			this.autowiredAnnotationTypes.add((Class<? extends Annotation>)
 					ClassUtils.forName("javax.inject.Inject", AutowiredAnnotationBeanPostProcessor.class.getClassLoader()));
@@ -746,7 +749,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					 * 引用类型的成员
 					 *
 					 * 这个是成员变量触发自动装配
-					 * 依赖注入
+					 * 依赖注入：@Autowired在这里会触发自动装配getBean,
+					 * 而@Value会触发${}字段的配置解析
+					 *
 					 */
 					value = beanFactory.resolveDependency(desc, beanName, autowiredBeanNames, typeConverter);
 				}

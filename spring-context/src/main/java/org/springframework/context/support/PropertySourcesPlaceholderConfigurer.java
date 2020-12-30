@@ -140,6 +140,9 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 
 		if (this.propertySources == null) {
 			this.propertySources = new MutablePropertySources();
+
+
+
 			if (this.environment != null) {
 				//把Environment对象封装成的PropertySource对象加入到
 				this.propertySources.addLast(
@@ -164,6 +167,10 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 					}
 				);
 			}
+
+
+
+			
 			try {
 				/**
 				 * 加载本地配置文件中的属性值，包装成properties对象后，最终包装成PropertySource对象
@@ -189,6 +196,8 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 			catch (IOException ex) {
 				throw new BeanInitializationException("Could not load properties", ex);
 			}
+			
+			
 		}
 
 		/**
@@ -220,6 +229,9 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 
 		/**
 		 * 重点是@Value对象会调用到这里
+		 *
+		 * 这里相当于创建StringValueResolver的匿名对象，传递到后面进行处理
+		 *
 		 */
 		StringValueResolver valueResolver = strVal -> {
 			String resolved = (this.ignoreUnresolvablePlaceholders ?

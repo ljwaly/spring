@@ -50,6 +50,9 @@ package org.springframework.core.env;
  * @see ConfigurableEnvironment
  * @see SystemEnvironmentPropertySource
  * @see org.springframework.web.context.support.StandardServletEnvironment
+ *
+ * 初始化的时候，加载构造方法，先创建父类构造方法
+ *
  */
 public class StandardEnvironment extends AbstractEnvironment {
 
@@ -75,8 +78,22 @@ public class StandardEnvironment extends AbstractEnvironment {
 	 */
 	@Override
 	protected void customizePropertySources(MutablePropertySources propertySources) {
+		/**
+		 * 针对Environment对象，
+		 * 初始化内部存储的过程，
+		 * 相当于向自己的MutablePropertySources对象，添加一些命名的map
+		 */
+
+
+		/**
+		 * 针对Environment，添加systemEnvironment为名的系统变量
+		 */
 		propertySources.addLast(
 				new PropertiesPropertySource(SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME, getSystemProperties()));
+
+		/**
+		 * 针对Environment，添加systemProperties为名的系统变量
+		 */
 		propertySources.addLast(
 				new SystemEnvironmentPropertySource(SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME, getSystemEnvironment()));
 	}

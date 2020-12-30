@@ -979,6 +979,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		}
 		String result = value;
 		for (StringValueResolver resolver : this.embeddedValueResolvers) {
+			/**
+			 * 处理@Value-3
+			 *
+			 * 在这里发生回调，找到匿名对象（这个是BeanFactoryPostRegister的实现类PropertySourcesPlaceholderConfigurer.class）
+			 * 在初始化的时候，embeddedValueResolvers这个容器中的数据被ropertySourcesPlaceholderConfigurer.class创建匿名对象添加进来
+			 */
 			result = resolver.resolveStringValue(result);
 			if (result == null) {
 				return null;
