@@ -163,6 +163,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	private volatile boolean hasDestructionAwareBeanPostProcessors;
 
 	/** Map from scope identifier String to corresponding Scope. */
+	/**
+	 * 我们自定义scope的管理容器，每个Scope管理自我定义对象的一种定义模式
+	 * 不同的Scope模式，对应不同的名称
+	 * 单例模式
+	 * 多例模式
+	 * Scope模式
+	 */
 	private final Map<String, Scope> scopes = new LinkedHashMap<>(8);
 
 	/** Security context used when running with a SecurityManager. */
@@ -260,7 +267,15 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		 */
 		Object sharedInstance = getSingleton(beanName);
 
-		//如果缓存中能拿到实例
+		/**
+		 * 如果缓存中能拿到实例
+		 *
+		 * 另外一种情况：FactoryBean模式下
+		 * 当是FactoryBeanDemo进行初始化的时候，
+		 * 如果不是直接从getBean获取内部创建的对象Student，是获取不到这个缓存的
+		 * 当代码明确进行getBean获取Student对象，那么这时候会在这里取到&factoryBeanDemo对应的对象
+		 *
+		 */
 		if (sharedInstance != null && args == null) {
 			if (logger.isTraceEnabled()) {
 				if (isSingletonCurrentlyInCreation(beanName)) {
@@ -273,6 +288,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			/**
+			 * FactoryBean模式下：
+			 * Student触发getBean操作
+			 *
 			 * 该方法是factoryBean接口调入的方法-2
 			 *
 			 */
@@ -346,8 +364,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 
+
 				/**
-				 * 着重看，大部分是单利情况
+				 * 着重看，单例模式
 				 */
 				// Create bean instance.
 				if (mbd.isSingleton()) {
@@ -375,18 +394,21 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 							throw ex;
 						}
 					});
+					/**
+					 * 初始化BeanDefinition的isFactory属性
+					 */
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
 
-
-
-
+				/**
+				 * 多例模式
+				 */
 				else if (mbd.isPrototype()) {
 
 
 					/**
 					 * 如果是prototype类型的对象
-					 * 不管是单线程，还是多线程调用，每次拿到的getBean都不一样
+					 * 不管是单线程，还是多线程调用，每次拿到的getBean都不一样，hashcode都是不一样
 					 * 不会放缓存，每次都是重新创建对象
 					 */
 					// It's a prototype -> create a new instance.
@@ -403,24 +425,28 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 
 
-
+				/**
+				 * 自定义scope
+				 */
 				else {
-					/**
-					 * 自定义scope
-					 *
-					 *
-					 */
-
 
 					String scopeName = mbd.getScope();
 					if (!StringUtils.hasLength(scopeName)) {
 						throw new IllegalStateException("No scope name defined for bean ´" + beanName + "'");
 					}
+					/**
+					 * 通过BeanDefinitionRegistryPostProcessor实现CustomScope的管理对象的放入
+					 */
 					Scope scope = this.scopes.get(scopeName);
 					if (scope == null) {
 						throw new IllegalStateException("No Scope registered for scope name '" + scopeName + "'");
 					}
 					try {
+						/**
+						 * scope的get方法，由我们自定义Scope的类进行实现
+						 * 这里有一个匿名的对象，
+						 * 这里的回调方法，需要我们在自定义的get方法中进行匿名对象的接口调用进行回调
+						 */
 						Object scopedInstance = scope.get(beanName, () -> {
 							beforePrototypeCreation(beanName);
 							try {
@@ -588,6 +614,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		if (beanInstance != null && beanInstance.getClass() != NullBean.class) {
 			if (beanInstance instanceof FactoryBean) {
 				if (!isFactoryDereference) {
+
+					/**
+					 * 拿到当前BeanDefinition的class类型
+					 */
 					Class<?> type = getTypeForFactoryBean((FactoryBean<?>) beanInstance);
 					return (type != null && typeToMatch.isAssignableFrom(type));
 				}
@@ -1864,6 +1894,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 		// Don't let calling code try to dereference the factory if the bean isn't a factory.
 		if (BeanFactoryUtils.isFactoryDereference(name)) {
+			/**
+			 *如果是FactoryBean并且是以&开头的
+			 * 直接返回实现FactoryBean的对象的本身的实例
+			 */
 			if (beanInstance instanceof NullBean) {
 				return beanInstance;
 			}
@@ -1879,17 +1913,31 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// Now we have the bean instance, which may be a normal bean or a FactoryBean.
 		// If it's a FactoryBean, we use it to create a bean instance, unless the
 		// caller actually wants a reference to the factory.
+		/**
+		 * 如果实例不是FactoryBean，是一个普通对象，直接返回
+		 */
 		if (!(beanInstance instanceof FactoryBean)) {
 			return beanInstance;
 		}
 
+
+		/**
+		 * 如果代码走到这里
+		 * 说明beanName不是以&开头的，并且beanInstance是FactoryBean类型的
+		 */
 		Object object = null;
 		if (mbd != null) {
 			mbd.isFactoryBean = true;
 		}
 		else {
+			/**
+			 * 从缓存中获取对象
+			 */
 			object = getCachedObjectForFactoryBean(beanName);
 		}
+
+
+
 		if (object == null) {
 			// Return bean instance from factory.
 			FactoryBean<?> factory = (FactoryBean<?>) beanInstance;
@@ -1898,8 +1946,16 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				mbd = getMergedLocalBeanDefinition(beanName);
 			}
 			boolean synthetic = (mbd != null && mbd.isSynthetic());
+			/**
+			 * FactoryBean模式下：
+			 * Student触发getBean操作
+			 *
+			 * 该方法是factoryBean接口调入的方法-3
+			 */
 			object = getObjectFromFactoryBean(factory, beanName, !synthetic);
 		}
+
+
 		return object;
 	}
 

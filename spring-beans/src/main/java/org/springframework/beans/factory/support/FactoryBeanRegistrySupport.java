@@ -61,6 +61,9 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 						(PrivilegedAction<Class<?>>) factoryBean::getObjectType, getAccessControlContext());
 			}
 			else {
+				/**
+				 * 如果是FactoryBean，则调用获取类型的接口
+				 */
 				return factoryBean.getObjectType();
 			}
 		}
@@ -98,6 +101,12 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 			synchronized (getSingletonMutex()) {
 				Object object = this.factoryBeanObjectCache.get(beanName);
 				if (object == null) {
+					/**
+					 * FactoryBean模式下：
+					 * Student触发getBean操作
+					 *
+					 * 该方法是factoryBean接口调入的方法-4
+					 */
 					object = doGetObjectFromFactoryBean(factory, beanName);
 					// Only post-process and store if not put there already during getObject() call above
 					// (e.g. because of circular reference processing triggered by custom getBean calls)
@@ -166,6 +175,14 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 				}
 			}
 			else {
+				/**
+				 * FactoryBean模式下：
+				 * Student触发getBean操作
+				 *
+				 * 该方法是factoryBean接口调入的方法-5
+				 *
+				 * 此时触发factoryBean接口的方法，拿到Student对象
+				 */
 				object = factory.getObject();
 			}
 		}
