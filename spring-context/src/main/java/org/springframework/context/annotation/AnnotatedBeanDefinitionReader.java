@@ -68,6 +68,10 @@ public class AnnotatedBeanDefinitionReader {
 	 * @see #setEnvironment(Environment)
 	 */
 	public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry) {
+		/**
+		 * 很多注解都是在这里进行声明的-3
+		 * Environment在getOrCreateEnvironment(registry)调用是创建
+		 */
 		this(registry, getOrCreateEnvironment(registry));
 	}
 
@@ -85,6 +89,10 @@ public class AnnotatedBeanDefinitionReader {
 		Assert.notNull(environment, "Environment must not be null");
 		this.registry = registry;
 		this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
+
+		/**
+		 * 很多注解都是在这里进行声明的-4
+		 */
 		AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
 	}
 
@@ -293,6 +301,9 @@ public class AnnotatedBeanDefinitionReader {
 	private static Environment getOrCreateEnvironment(BeanDefinitionRegistry registry) {
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		if (registry instanceof EnvironmentCapable) {
+			/**
+			 * 创建容器的Environment
+			 */
 			return ((EnvironmentCapable) registry).getEnvironment();
 		}
 		return new StandardEnvironment();

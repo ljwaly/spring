@@ -54,6 +54,9 @@ abstract class ConfigurationClassUtils {
 
 	public static final String CONFIGURATION_CLASS_LITE = "lite";
 
+	/**
+	 * 已经处理过的标记
+	 */
 	public static final String CONFIGURATION_CLASS_ATTRIBUTE =
 			Conventions.getQualifiedAttributeName(ConfigurationClassPostProcessor.class, "configurationClass");
 
@@ -93,18 +96,35 @@ abstract class ConfigurationClassUtils {
 
 		/**
 		 * 如果是扫描注解产生的BeanDefinition
+		 * AnnotatedBeanDefinition基本上主要是ScannedGenericBeanDefinition实现类
+		 *
+		 * 主要的扫描注解都是通过这个实现的
 		 */
 		if (beanDef instanceof AnnotatedBeanDefinition &&
 				className.equals(((AnnotatedBeanDefinition) beanDef).getMetadata().getClassName())) {
 			// Can reuse the pre-parsed metadata from the given BeanDefinition...
 			/**
+			 * 重要程度 5星
+			 * 基于注解扫描  都会走这里
+			 *
 			 * 所有的元注解信息都在这里
 			 */
 			metadata = ((AnnotatedBeanDefinition) beanDef).getMetadata();
 		}
 
-		//如果是非扫描注解产生的BeanDefinition
+
+
+
+		/**
+		 * 如果是非扫描注解（自定义的）产生的BeanDefinition
+		 * AbstractBeanDefinition基本上主要是
+		 */
 		else if (beanDef instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) beanDef).hasBeanClass()) {
+			/**
+			 * 自定义的BeanDefinition，
+			 * 比如通过BeanDefinitionRegistry.registry(bd)
+			 */
+
 			// Check already loaded Class if present...
 			// since we possibly can't even load the class file for this Class.
 			Class<?> beanClass = ((AbstractBeanDefinition) beanDef).getBeanClass();
@@ -114,8 +134,16 @@ abstract class ConfigurationClassUtils {
 					EventListenerFactory.class.isAssignableFrom(beanClass)) {
 				return false;
 			}
+			/**
+			 * 需要重新扫描
+			 * 这个类上没有注解信息，需要创建一个metadata对象
+			 */
 			metadata = AnnotationMetadata.introspect(beanClass);
 		}
+
+
+
+		//这个else基本上走不到
 		else {
 			try {
 				MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(className);
@@ -131,19 +159,29 @@ abstract class ConfigurationClassUtils {
 		}
 
 
+
+
 		/**
 		 * 从metadata中拿到Configuration中拿到所有的注解
 		 */
 		Map<String, Object> config = metadata.getAnnotationAttributes(Configuration.class.getName());
 
+		//如果有@Configuration注解，就是完全匹配标识
 		if (config != null && !Boolean.FALSE.equals(config.get("proxyBeanMethods"))) {
-			//如果有@Configuration注解，就是完全匹配标识
+			//相当于打了一个标识，logoal
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
+
+		/**
+		 * 如果是有@Component, @ComponentScan, @Import, @ImportResource或者方法上有@Bean,就是lite匹配（一点点little匹配）
+		 * isConfigurationCandidate(metadata)
+		 */
 		else if (config != null || isConfigurationCandidate(metadata)) {
-			//如果是有@Component，@ComponentScan, @Import, @ImportResource或者方法上有@Bean,就是lite匹配（一点点匹配）
+			//相当于打了一个标识，logoal
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}
+
+
 		else {
 			return false;
 		}
@@ -174,6 +212,14 @@ abstract class ConfigurationClassUtils {
 		}
 
 		// Any of the typical annotations found?
+		/**
+		 * 一个set容器，放入了4中注解，如果是，匹配
+		 *
+		 * candidateIndicators.add(Component.class.getName());
+		 * candidateIndicators.add(ComponentScan.class.getName());
+		 * candidateIndicators.add(Import.class.getName());
+		 * candidateIndicators.add(ImportResource.class.getName());
+		 */
 		for (String indicator : candidateIndicators) {
 			if (metadata.isAnnotated(indicator)) {
 				return true;
@@ -182,6 +228,9 @@ abstract class ConfigurationClassUtils {
 
 		// Finally, let's look for @Bean methods...
 		try {
+			/**
+			 * 如果是有@Bean定义的方法，也算是
+			 */
 			return metadata.hasAnnotatedMethods(Bean.class.getName());
 		}
 		catch (Throwable ex) {

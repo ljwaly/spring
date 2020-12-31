@@ -531,7 +531,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			// Prepare this context for refreshing.
 
 			/**
-			 * 创建Environment
+			 * 初始化一些普通的容器参数
 			 */
 			prepareRefresh();
 

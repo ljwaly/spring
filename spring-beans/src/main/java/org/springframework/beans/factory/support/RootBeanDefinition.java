@@ -54,23 +54,43 @@ import org.springframework.util.Assert;
 @SuppressWarnings("serial")
 public class RootBeanDefinition extends AbstractBeanDefinition {
 
+	/**
+	 * BeanDefinitionHolder存储有Bean的名称、别名、BeanDefinition
+	 */
 	@Nullable
 	private BeanDefinitionHolder decoratedDefinition;
 
+	/**
+	 * 是java反射包的接口，通过它可以查看Bean的注解信息，具体方法请查看：https://blog.csdn.net/u010142437/article/details/51589939
+	 */
 	@Nullable
 	private AnnotatedElement qualifiedElement;
 
 	/** Determines if the definition needs to be re-merged. */
 	volatile boolean stale;
 
+	/**
+	 * 允许缓存
+	 */
 	boolean allowCaching = true;
 
+	/**
+	 * 从字面上理解：工厂方法是否唯一
+	 */
 	boolean isFactoryMethodUnique = false;
 
+	/**
+	 * 封装了java.lang.reflect.Type,提供了泛型相关的操作，具体请查看：
+	 * 	https://blog.wangqi.love/articles/Spring/Spring%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B%E5%88%86%E6%9E%90.%E7%95%AA%E5%A4%96(ResolvableType).html
+	 *
+	 */
 	@Nullable
 	volatile ResolvableType targetType;
 
 	/** Package-visible field for caching the determined Class of a given bean definition. */
+	/**
+	 * 缓存class，表明RootBeanDefinition存储哪个类的信息
+	 */
 	@Nullable
 	volatile Class<?> resolvedTargetType;
 
@@ -78,50 +98,116 @@ public class RootBeanDefinition extends AbstractBeanDefinition {
 	@Nullable
 	volatile Boolean isFactoryBean;
 
+	/**
+	 * 缓存工厂方法的返回类型
+	 */
 	/** Package-visible field for caching the return type of a generically typed factory method. */
 	@Nullable
 	volatile ResolvableType factoryMethodReturnType;
 
+	/**
+	 * 缓存工厂方法
+	 */
 	/** Package-visible field for caching a unique factory method candidate for introspection. */
 	@Nullable
 	volatile Method factoryMethodToIntrospect;
 
+
+
+
+
+
+	/**
+	 * 以下四个变量的锁
+	 */
 	/** Common lock for the four constructor fields below. */
 	final Object constructorArgumentLock = new Object();
 
+
+	/**
+	 * 缓存已经解析的构造函数或是工厂方法，Executable是Method、Constructor类型的父类，关于java反射的更多信息请查看：
+	 */
 	/** Package-visible field for caching the resolved constructor or factory method. */
 	@Nullable
 	Executable resolvedConstructorOrFactoryMethod;
 
+
+	/**
+	 * 表明构造函数参数是否解析完毕
+	 */
 	/** Package-visible field that marks the constructor arguments as resolved. */
 	boolean constructorArgumentsResolved = false;
 
+
+	/**
+	 * 缓存完全解析的构造函数参数
+	 */
 	/** Package-visible field for caching fully resolved constructor arguments. */
 	@Nullable
 	Object[] resolvedConstructorArguments;
 
+
+	/**
+	 * 缓存待解析的构造函数参数，即还没有找到对应的实例，可以理解为还没有注入依赖的形参（我的理解）
+	 */
 	/** Package-visible field for caching partly prepared constructor arguments. */
 	@Nullable
 	Object[] preparedConstructorArguments;
 
+
+
+
+
+
+
+	/**
+	 * 以下两个变量的锁
+	 */
 	/** Common lock for the two post-processing fields below. */
 	final Object postProcessingLock = new Object();
 
+	/**
+	 * 表明是否被MergedBeanDefinitionPostProcessor处理过
+	 */
 	/** Package-visible field that indicates MergedBeanDefinitionPostProcessor having been applied. */
 	boolean postProcessed = false;
 
+	/**
+	 * 在生成代理的时候会使用，表明是否已经生成代理
+	 */
 	/** Package-visible field that indicates a before-instantiation post-processor having kicked in. */
 	@Nullable
 	volatile Boolean beforeInstantiationResolved;
 
+
+
+
+	//以下三个属性是外部管理的方法集合（配置、初始化、銷毀），似乎可以缓存自动装配对象的值
+
+	/**
+	 * 实际缓存的类型是Constructor、Field、Method类型，更多信息请查看：http://shouce.jb51.net/java/jdk1.5/java/lang/reflect/class-use/Member.html
+	 */
 	@Nullable
 	private Set<Member> externallyManagedConfigMembers;
 
+	/**
+	 *  InitializingBean中的init回调函数名——afterPropertiesSet会在这里记录，以便进行生命周期回调
+	 */
 	@Nullable
 	private Set<String> externallyManagedInitMethods;
 
+	/**
+	 * DisposableBean的destroy回调函数名——destroy会在这里记录，以便进行生命周期回调
+	 */
 	@Nullable
 	private Set<String> externallyManagedDestroyMethods;
+
+
+
+
+
+
+
 
 
 	/**

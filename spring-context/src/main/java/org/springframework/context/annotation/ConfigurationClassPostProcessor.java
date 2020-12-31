@@ -85,7 +85,12 @@ import org.springframework.util.ClassUtils;
  */
 
 /**
- * 优先级最低
+ * 优先级最低，最后执行的BeanDefinitionRegistryPostProcessor
+ *
+ * BeanDefinitionRegistryPostProcessor这个接口是为了操作BeanDefinition，并加入注册器，单不涉及实例化
+ * 调用是在实例化之前
+ * BeanFactoryPostProcessor这个接口
+ *
  */
 public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPostProcessor,
 		PriorityOrdered, ResourceLoaderAware, BeanClassLoaderAware, EnvironmentAware {
@@ -142,6 +147,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 	@Override
 	public int getOrder() {
+		/**
+		 * 最后操作
+		 */
 		return Ordered.LOWEST_PRECEDENCE;  // within PriorityOrdered
 	}
 
@@ -222,7 +230,10 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 
 	/**
+	 *
 	 * Derive further bean definitions from the configuration classes in the registry.
+	 *
+	 * 接口BeanDefinitionRegistryPostProcessor实现
 	 */
 	@Override
 	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
@@ -237,12 +248,21 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 		this.registriesPostProcessed.add(registryId);
 
+		/**
+		 * 核心逻辑，重要程度5
+		 */
 		processConfigBeanDefinitions(registry);
 	}
 
 	/**
 	 * Prepare the Configuration classes for servicing bean requests at runtime
 	 * by replacing them with CGLIB-enhanced subclasses.
+	 */
+	/**
+	 * BeanFactoryPostProcessor接口实现
+	 *
+	 *
+	 * @param beanFactory
 	 */
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
@@ -267,29 +287,39 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * {@link Configuration} classes.
 	 */
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
+
+		/**
+		 * 需要ConfigurationClassPostProcessor处理的存储BD的容器
+		 */
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
+
+		/**
+		 * 拿到BeanDefinition所有的名称
+		 */
 		String[] candidateNames = registry.getBeanDefinitionNames();
 
 		for (String beanName : candidateNames) {
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
 
-
+			/**
+			 * 如果有标识，就不在处理
+			 * 就是已经处理过了
+			 */
 			if (beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null) {
-				/**
-				 * 如果有标识，就不在处理
-				 */
 				if (logger.isDebugEnabled()) {
 					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
 				}
 			}
 
-			//checkConfigurationClassCandidate检查是否是需要处理的注解
+
+			/**
+			 * 对BeanDefinition进行判断，是否是需要ConfigurationClassPostProcessor来处理的
+			 * 如果是，就放入候选容器configCandidates
+			 * 核心逻辑checkConfigurationClassCandidate，
+			 */
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
-				/**
-				 * 判断是否是需要处理的注解，如果是，就进行处理
-				 *
-				 */
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
+
 			}
 		}
 
@@ -299,11 +329,16 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 
 		// Sort by previously determined @Order value, if applicable
+		/**
+		 * 通过order设置，进行bd的排序处理
+		 */
 		configCandidates.sort((bd1, bd2) -> {
 			int i1 = ConfigurationClassUtils.getOrder(bd1.getBeanDefinition());
 			int i2 = ConfigurationClassUtils.getOrder(bd2.getBeanDefinition());
 			return Integer.compare(i1, i2);
 		});
+
+
 
 		// Detect any custom bean name generation strategy supplied through the enclosing application context
 		SingletonBeanRegistry sbr = null;
