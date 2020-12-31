@@ -46,6 +46,9 @@ import org.springframework.util.ReflectionUtils;
  */
 public class StandardAnnotationMetadata extends StandardClassMetadata implements AnnotationMetadata {
 
+	/**
+	 * 实现类，可以是 TypeMappedAnnotations
+	 */
 	private final MergedAnnotations mergedAnnotations;
 
 	private final boolean nestedAnnotationsAsMap;

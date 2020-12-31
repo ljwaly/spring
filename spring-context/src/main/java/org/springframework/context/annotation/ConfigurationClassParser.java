@@ -167,22 +167,34 @@ class ConfigurationClassParser {
 
 
 	public void parse(Set<BeanDefinitionHolder> configCandidates) {
+
+
 		for (BeanDefinitionHolder holder : configCandidates) {
 			BeanDefinition bd = holder.getBeanDefinition();
 			try {
 
 				/**
 				 * 扫描注解得到的BeanDefinition
+				 * 普通的基本上会走这个类
+				 *
+				 * Scanner的BeanDefinition比较多
 				 */
 				if (bd instanceof AnnotatedBeanDefinition) {
+					/**
+					 * 核心流程
+					 */
 					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
 				}
 
 				/**
 				 * 非扫描注解得到的BeanDefinition
 				 * 主要走这个
+				 *  RootBeanDefinition
+				 *  GenericBeanDefinition
+				 *  这两种会走这个
 				 */
 				else if (bd instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) bd).hasBeanClass()) {
+
 					parse(((AbstractBeanDefinition) bd).getBeanClass(), holder.getBeanName());
 				}
 				else {
@@ -212,6 +224,11 @@ class ConfigurationClassParser {
 	}
 
 	protected final void parse(AnnotationMetadata metadata, String beanName) throws IOException {
+		/**
+		 * 把Metadata对象和BeanName封装成ConfigurationClass对象
+		 * metadata：
+		 *   StandardAnnotationMetadata
+		 */
 		processConfigurationClass(new ConfigurationClass(metadata, beanName), DEFAULT_EXCLUSION_FILTER);
 	}
 
@@ -232,6 +249,7 @@ class ConfigurationClassParser {
 
 	protected void processConfigurationClass(ConfigurationClass configClass, Predicate<String> filter) throws IOException {
 		/**
+		 * 自定义condition
 		 * 对@Condition注解的支持
 		 */
 		if (this.conditionEvaluator.shouldSkip(configClass.getMetadata(), ConfigurationPhase.PARSE_CONFIGURATION)) {
@@ -257,15 +275,17 @@ class ConfigurationClassParser {
 
 		// Recursively process the configuration class and its superclass hierarchy.
 		/**
-		 * 这个对象理解为跟类或者接口的对应，然后吧metadata对象包装进去
+		 * 这个对象SourceClass理解为跟类或者接口的对应，
+		 * 然后把metadata对象包装进去
 		 */
 		SourceClass sourceClass = asSourceClass(configClass, filter);
 		do {
 			/**
-			 * 核心代码
+			 * 核心代码，认真读
 			 */
 			sourceClass = doProcessConfigurationClass(configClass, sourceClass, filter);
 		}
+		//只要sourceClass不为空
 		while (sourceClass != null);
 
 		this.configurationClasses.put(configClass, configClass);
@@ -284,6 +304,7 @@ class ConfigurationClassParser {
 			ConfigurationClass configClass, SourceClass sourceClass, Predicate<String> filter)
 			throws IOException {
 
+		//判断类上面是否有@Component注解
 		if (configClass.getMetadata().isAnnotated(Component.class.getName())) {
 			/**
 			 * 这里用来做内部类的扫描
@@ -294,14 +315,19 @@ class ConfigurationClassParser {
 
 		// Process any @PropertySource annotations
 		/**
+		 * 初始化@PropertySource
+		 *
 		 * 从sourceClass中拿到Metadata
 		 */
 		for (AnnotationAttributes propertySource : AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), PropertySources.class,
 				org.springframework.context.annotation.PropertySource.class)) {
+			//propertySource相当于是map
+
 			if (this.environment instanceof ConfigurableEnvironment) {
 				/**
-				 * 扫描
+				 * 扫描@PropertySource，加载配置文件，解析占位符
+				 * 核心逻辑-1
 				 */
 				processPropertySource(propertySource);
 			}
@@ -466,6 +492,11 @@ class ConfigurationClassParser {
 	 * @throws IOException if loading a property source failed
 	 */
 	private void processPropertySource(AnnotationAttributes propertySource) throws IOException {
+		/**
+		 * 相当于从map中获取各种属性
+		 */
+
+		//这个名字可能会有多个@PropertySource引入同一个配置文件，需要在下面进行合并
 		String name = propertySource.getString("name");
 		if (!StringUtils.hasLength(name)) {
 			name = null;
@@ -476,7 +507,7 @@ class ConfigurationClassParser {
 		}
 
 		/**
-		 * 注解@PropertySource路径配置
+		 * 获取注解@PropertySource路径配置
 		 */
 		String[] locations = propertySource.getStringArray("value");
 		Assert.isTrue(locations.length > 0, "At least one @PropertySource(value) location is required");
@@ -486,10 +517,29 @@ class ConfigurationClassParser {
 		PropertySourceFactory factory = (factoryClass == PropertySourceFactory.class ?
 				DEFAULT_PROPERTY_SOURCE_FACTORY : BeanUtils.instantiateClass(factoryClass));
 
+
+
+
+		/**
+		 * 扫描@PropertySource，加载配置文件，解析占位符
+		 * 核心逻辑-2
+		 */
 		for (String location : locations) {
 			try {
+				//替换占位符
 				String resolvedLocation = this.environment.resolveRequiredPlaceholders(location);
+
+				//流的方式加载配置文件并封装成Resource对象
 				Resource resource = this.resourceLoader.getResource(resolvedLocation);
+
+				/**
+				 * 扫描@PropertySource，加载配置文件，解析占位符
+				 * 核心逻辑-3
+				 * 
+				 * 加载Resource中的配置属性封装成Properties对象中，
+				 * 并创建PropertrySource对象加入到Enviromment对象中
+				 *
+				 */
 				addPropertySource(factory.createPropertySource(name, new EncodedResource(resource, encoding)));
 			}
 			catch (IllegalArgumentException | FileNotFoundException | UnknownHostException ex) {
@@ -508,14 +558,25 @@ class ConfigurationClassParser {
 
 	private void addPropertySource(PropertySource<?> propertySource) {
 		String name = propertySource.getName();
+
+		// 获取Environment对象中的MutablePropertySources
 		MutablePropertySources propertySources = ((ConfigurableEnvironment) this.environment).getPropertySources();
 
+
+		/**
+		 * 扫描@PropertySource，加载配置文件，解析占位符
+		 * 核心逻辑-5
+		 */
+		//如果已经存在了该配置文件的propertySource则合并旧的
+		//这个名字可能会有多个@PropertySource引入同一个配置文件，需要在下面进行合并
 		if (this.propertySourceNames.contains(name)) {
 			// We've already added a version, we need to extend it
 			PropertySource<?> existing = propertySources.get(name);
 			if (existing != null) {
 				PropertySource<?> newSource = (propertySource instanceof ResourcePropertySource ?
 						((ResourcePropertySource) propertySource).withResourceName() : propertySource);
+
+				//合并2次后的类型
 				if (existing instanceof CompositePropertySource) {
 					((CompositePropertySource) existing).addFirstPropertySource(newSource);
 				}
@@ -523,6 +584,11 @@ class ConfigurationClassParser {
 					if (existing instanceof ResourcePropertySource) {
 						existing = ((ResourcePropertySource) existing).withResourceName();
 					}
+
+					/**
+					 * 其实就是CompositePropertySource里面有一个Set，
+					 * set里面装了新的和老的PropertySource
+					 */
 					CompositePropertySource composite = new CompositePropertySource(name);
 					composite.addPropertySource(newSource);
 					composite.addPropertySource(existing);
@@ -533,6 +599,9 @@ class ConfigurationClassParser {
 		}
 
 		if (this.propertySourceNames.isEmpty()) {
+			/**
+			 * 加入数据源
+			 */
 			propertySources.addLast(propertySource);
 		}
 		else {
@@ -668,6 +737,9 @@ class ConfigurationClassParser {
 	 * Factory method to obtain a {@link SourceClass} from a {@link ConfigurationClass}.
 	 */
 	private SourceClass asSourceClass(ConfigurationClass configurationClass, Predicate<String> filter) throws IOException {
+		/**
+		 * SourceClass原对象
+		 */
 		AnnotationMetadata metadata = configurationClass.getMetadata();
 		if (metadata instanceof StandardAnnotationMetadata) {
 			return asSourceClass(((StandardAnnotationMetadata) metadata).getIntrospectedClass(), filter);

@@ -43,26 +43,51 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 	/**
 	 * Shared instance that can be used when there are no annotations.
 	 */
+	/**
+	 * 没有注解时，使用的实例
+	 */
 	static final MergedAnnotations NONE = new TypeMappedAnnotations(
 			null, new Annotation[0], RepeatableContainers.none(), AnnotationFilter.ALL);
 
 
+	/**
+	 * 可注解元素实例
+	 */
 	@Nullable
 	private final Object source;
 
+	/**
+	 *
+	 */
 	@Nullable
 	private final AnnotatedElement element;
 
+	/**
+	 * 查找策略
+	 */
 	@Nullable
 	private final SearchStrategy searchStrategy;
 
+
+	/**
+	 * 注解
+	 */
 	@Nullable
 	private final Annotation[] annotations;
 
+	/**
+	 * 可重复注解container
+	 */
 	private final RepeatableContainers repeatableContainers;
 
+	/**
+	 * 注解过滤
+	 */
 	private final AnnotationFilter annotationFilter;
 
+	/**
+	 * 
+	 */
 	@Nullable
 	private volatile List<Aggregate> aggregates;
 

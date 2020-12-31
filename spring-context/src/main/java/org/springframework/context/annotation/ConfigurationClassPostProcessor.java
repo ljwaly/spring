@@ -361,21 +361,31 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		// Parse each @Configuration class
 		/**
 		 * 候选BeanDefinition解析器
+		 * 这个类是做解析的
 		 */
 		ConfigurationClassParser parser = new ConfigurationClassParser(
 				this.metadataReaderFactory, this.problemReporter, this.environment,
 				this.resourceLoader, this.componentScanBeanNameGenerator, registry);
 
+		/**
+		 * 需要解析的
+		 */
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
+		/**
+		 * 已经解析了的对象注解
+		 * 防止递归导致的重复解析
+		 */
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
 
 			/**
 			 * 解析核心流程
 			 * 重要程度5
-			 *
+			 * 其实就是把类上面的特殊注解解析出来，
+			 * 最终封装成BeanDefinition
 			 */
 			parser.parse(candidates);
+
 			parser.validate();
 
 			Set<ConfigurationClass> configClasses = new LinkedHashSet<>(parser.getConfigurationClasses());
