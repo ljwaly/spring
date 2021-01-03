@@ -175,6 +175,8 @@ public abstract class AnnotationConfigUtils {
 		 * 注册ConfigurationClassPostProcessor
 		 * 扫描：@Configuration
 		 *
+		 * 注册这个后置类之后，在服务启动的时候，进行postProcessBeanDefinitionRegistry接口方法调用
+		 *
 		 */
 		if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);

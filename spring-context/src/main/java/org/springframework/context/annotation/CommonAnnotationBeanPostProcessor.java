@@ -158,7 +158,15 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 		webServiceRefClass = loadAnnotationType("javax.xml.ws.WebServiceRef");
 		ejbClass = loadAnnotationType("javax.ejb.EJB");
 
+
+		/**
+		 * CommonAnnotationBeanPostProcessor类在构造方法中添加@PostConstruct,@PreDestory
+		 * 在类静态模块中添加@Resource注解
+		 */
 		resourceAnnotationTypes.add(Resource.class);
+
+
+
 		if (webServiceRefClass != null) {
 			resourceAnnotationTypes.add(webServiceRefClass);
 		}
@@ -197,9 +205,19 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 	public CommonAnnotationBeanPostProcessor() {
 		setOrder(Ordered.LOWEST_PRECEDENCE - 3);
 
-		//初始化PostConstruct注解，字段声明在父类中
+		/**
+		 * CommonAnnotationBeanPostProcessor类在构造方法中添加@PostConstruct,@PreDestory
+		 * 在本类的静态模块中添加@Resource注解
+		 */
+
+		/**
+		 * 初始化@PostConstruct注解，字段声明在父类中
+		 */
 		setInitAnnotationType(PostConstruct.class);
-		//初始化PreDestroy注解，字段声明在父类中
+
+		/**
+		 * 初始化@PreDestroy注解，字段声明在父类中
+		 */
 		setDestroyAnnotationType(PreDestroy.class);
 
 
