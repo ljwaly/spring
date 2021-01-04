@@ -142,6 +142,11 @@ public class AnnotatedBeanDefinitionReader {
 	 */
 	public void register(Class<?>... componentClasses) {
 		for (Class<?> componentClass : componentClasses) {
+			/**
+			 * 将传入的类，
+			 * 构建BeanDefinition,
+			 * 并放入BeanDefinitionMap
+			 */
 			registerBean(componentClass);
 		}
 	}
@@ -152,6 +157,11 @@ public class AnnotatedBeanDefinitionReader {
 	 * @param beanClass the class of the bean
 	 */
 	public void registerBean(Class<?> beanClass) {
+		/**
+		 * 将传入的类，
+		 * 构建BeanDefinition,
+		 * 并放入BeanDefinitionMap
+		 */
 		doRegisterBean(beanClass, null, null, null, null);
 	}
 
@@ -258,6 +268,10 @@ public class AnnotatedBeanDefinitionReader {
 			@Nullable Class<? extends Annotation>[] qualifiers, @Nullable Supplier<T> supplier,
 			@Nullable BeanDefinitionCustomizer[] customizers) {
 
+		/**
+		 * 通过传入的参数，
+		 * 初始化一个BeanDefinition对象
+		 */
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
 		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
 			return;
@@ -290,12 +304,16 @@ public class AnnotatedBeanDefinitionReader {
 
 		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
 		definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
+
+		/**
+		 * 将创建好的BeanDefinition放入BeanDefinitionMap
+		 */
 		BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry);
 	}
 
 
 	/**
-	 * 创建Environment
+	 * 创建Environment//
 	 *
 	 * Get the Environment from the given registry if possible, otherwise return a new
 	 * StandardEnvironment.
