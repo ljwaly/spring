@@ -237,6 +237,13 @@ class ConfigurationClassParser {
 			}
 		}
 
+
+		/**
+		 *
+		 * springboot实现ImportBeanDefinitionRegistrar接口比较多的情况下的，
+		 * 批量去处理
+		 *
+		 */
 		this.deferredImportSelectorHandler.process();
 	}
 
@@ -375,7 +382,7 @@ class ConfigurationClassParser {
 		 */
 		if (configClass.getMetadata().isAnnotated(Component.class.getName())) {
 			/**
-			 * 这里用来做内部类的扫描
+			 * 递归处理所有的内部类的扫描
 			 */
 			// Recursively process any member (nested) classes first
 			processMemberClasses(configClass, sourceClass, filter);
@@ -433,6 +440,9 @@ class ConfigurationClassParser {
 				 */
 				Set<BeanDefinitionHolder> scannedBeanDefinitions =
 						this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
+
+
+
 				// Check the set of scanned definitions for any further config classes and parse recursively if needed
 				for (BeanDefinitionHolder holder : scannedBeanDefinitions) {
 					BeanDefinition bdCand = holder.getBeanDefinition().getOriginatingBeanDefinition();
@@ -450,6 +460,14 @@ class ConfigurationClassParser {
 
 
 		// Process any @Import annotations
+		/**
+		 * 扫描@Import注解
+		 *
+		 * 接口ImportSelector和
+		 *
+		 *
+		 *
+		 */
 		processImports(configClass, sourceClass, getImports(sourceClass), filter, true);
 
 		// Process any @ImportResource annotations
@@ -494,7 +512,12 @@ class ConfigurationClassParser {
 	private void processMemberClasses(ConfigurationClass configClass, SourceClass sourceClass,
 			Predicate<String> filter) throws IOException {
 
+		/**
+		 * 获取所有的内部成员类
+		 */
 		Collection<SourceClass> memberClasses = sourceClass.getMemberClasses();
+
+
 		if (!memberClasses.isEmpty()) {
 			List<SourceClass> candidates = new ArrayList<>(memberClasses.size());
 			for (SourceClass memberClass : memberClasses) {
@@ -503,7 +526,16 @@ class ConfigurationClassParser {
 					candidates.add(memberClass);
 				}
 			}
+
+			/**
+			 * 排序
+			 */
 			OrderComparator.sort(candidates);
+
+
+			/**
+			 * 循环处理每一个内部类
+			 */
 			for (SourceClass candidate : candidates) {
 				if (this.importStack.contains(configClass)) {
 					this.problemReporter.error(new CircularImportProblem(configClass, this.importStack));
@@ -511,6 +543,9 @@ class ConfigurationClassParser {
 				else {
 					this.importStack.push(configClass);
 					try {
+						/**
+						 * 递归处理有@Component内部类
+						 */
 						processConfigurationClass(candidate.asConfigClass(configClass), filter);
 					}
 					finally {
@@ -743,47 +778,104 @@ class ConfigurationClassParser {
 			Collection<SourceClass> importCandidates, Predicate<String> exclusionFilter,
 			boolean checkForCircularImports) {
 
+
+		//如果没有@Import注解，则不进行以下的接口触发
 		if (importCandidates.isEmpty()) {
 			return;
 		}
 
+
+		/**
+		 * 这里就是@Component和@Import注解的区别
+		 *
+		 * 实现
+		 * 接口ImportSelector,
+		 * 接口ImportBeanDefinitionRegistrar
+		 * 两个接口的触发
+		 *
+		 *
+		 *
+		 */
 		if (checkForCircularImports && isChainedImportOnStack(configClass)) {
 			this.problemReporter.error(new CircularImportProblem(configClass, this.importStack));
 		}
 		else {
 			this.importStack.push(configClass);
 			try {
+
+				/**
+				 * 循环类上@Import
+				 */
 				for (SourceClass candidate : importCandidates) {
+
+
+					//ImportSelector接口触发
 					if (candidate.isAssignable(ImportSelector.class)) {
 						// Candidate class is an ImportSelector -> delegate to it to determine imports
 						Class<?> candidateClass = candidate.loadClass();
 						ImportSelector selector = ParserStrategyUtils.instantiateClass(candidateClass, ImportSelector.class,
 								this.environment, this.resourceLoader, this.registry);
+
+						/**
+						 * 在搜集过程中，已经调用了接口的实现
+						 */
 						Predicate<String> selectorFilter = selector.getExclusionFilter();
+
+
 						if (selectorFilter != null) {
 							exclusionFilter = exclusionFilter.or(selectorFilter);
 						}
+
+
 						if (selector instanceof DeferredImportSelector) {
+							/**
+							 * 比较复杂
+							 * springboot中自动配置用到了
+							 */
 							this.deferredImportSelectorHandler.handle(configClass, (DeferredImportSelector) selector);
 						}
 						else {
 							String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
 							Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames, exclusionFilter);
+
+							//递归处理，处理重复嵌套的@Import
 							processImports(configClass, currentSourceClass, importSourceClasses, exclusionFilter, false);
 						}
 					}
+
+
+
+
+					// 如果是ImportBeanDefinitionRegistrar接口触发
 					else if (candidate.isAssignable(ImportBeanDefinitionRegistrar.class)) {
 						// Candidate class is an ImportBeanDefinitionRegistrar ->
 						// delegate to it to register additional bean definitions
 						Class<?> candidateClass = candidate.loadClass();
+
+						/**
+						 * 反射实例化
+						 */
 						ImportBeanDefinitionRegistrar registrar =
 								ParserStrategyUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class,
 										this.environment, this.resourceLoader, this.registry);
+
+						/**
+						 * 加入到importBeanDefinitionRegistrars的容器中
+						 *
+						 * 而放入这个容器中之后，是搜集注解结束之后，才调用的
+						 */
 						configClass.addImportBeanDefinitionRegistrar(registrar, currentSourceClass.getMetadata());
 					}
+
+
+
+
 					else {
 						// Candidate class not an ImportSelector or ImportBeanDefinitionRegistrar ->
 						// process it as an @Configuration class
+						/**
+						 *
+						 */
 						this.importStack.registerImport(
 								currentSourceClass.getMetadata(), candidate.getMetadata().getClassName());
 						processConfigurationClass(candidate.asConfigClass(configClass), exclusionFilter);
