@@ -134,6 +134,10 @@ class ConfigurationClassParser {
 
 	private final ConditionEvaluator conditionEvaluator;
 
+	/**
+	 * 最终用于构建BeanDefinition
+	 *
+	 */
 	private final Map<ConfigurationClass, ConfigurationClass> configurationClasses = new LinkedHashMap<>();
 
 	private final Map<String, ConfigurationClass> knownSuperclasses = new HashMap<>();
@@ -463,7 +467,8 @@ class ConfigurationClassParser {
 		/**
 		 * 扫描@Import注解
 		 *
-		 * 接口ImportSelector和
+		 * 触发
+		 * 接口ImportSelector和接口ImportBeanDefinitionRegistrar的调用
 		 *
 		 *
 		 *
@@ -1250,6 +1255,12 @@ class ConfigurationClassParser {
 			return new AssignableTypeFilter(clazz).match((MetadataReader) this.source, metadataReaderFactory);
 		}
 
+		/**
+		 * 构建ConfigurationClass，最终用于生成BeanDefinition
+		 *
+		 * @param importedBy
+		 * @return
+		 */
 		public ConfigurationClass asConfigClass(ConfigurationClass importedBy) {
 			if (this.source instanceof Class) {
 				return new ConfigurationClass((Class<?>) this.source, importedBy);
