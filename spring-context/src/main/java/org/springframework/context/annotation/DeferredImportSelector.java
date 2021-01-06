@@ -56,12 +56,18 @@ public interface DeferredImportSelector extends ImportSelector {
 	interface Group {
 
 		/**
+		 * 处理流程,收集需要加入到spring容器中的类
+		 *
+		 *
 		 * Process the {@link AnnotationMetadata} of the importing @{@link Configuration}
 		 * class using the specified {@link DeferredImportSelector}.
 		 */
 		void process(AnnotationMetadata metadata, DeferredImportSelector selector);
 
 		/**
+		 * 返回收集到需要加入spring容器的类
+		 * 
+		 *
 		 * Return the {@link Entry entries} of which class(es) should be imported
 		 * for this group.
 		 */

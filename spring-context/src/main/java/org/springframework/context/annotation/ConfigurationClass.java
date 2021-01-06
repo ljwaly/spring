@@ -56,23 +56,27 @@ final class ConfigurationClass {
 	private String beanName;
 
 	/**
-	 * 注解@Configuration内部的@Compontent
+	 * 装的是这个类对应的父容器，是由哪个外部类导入到这个类的
+	 *
+	 *
 	 */
 	private final Set<ConfigurationClass> importedBy = new LinkedHashSet<>(1);
 
 	/**
-	 * 注解@Configuration内部的@bean
+	 * 注解@Configuration/@Compontent内部的@bean的方法
+	 * 方法的信息会包装到BeanMethod
 	 */
 	private final Set<BeanMethod> beanMethods = new LinkedHashSet<>();
 
 	/**
-	 * 实现了一些接口的
+	 * 如果这个类实现了一些接口BeanDefinitionReader，
 	 */
 	private final Map<String, Class<? extends BeanDefinitionReader>> importedResources =
 			new LinkedHashMap<>();
 
 	/**
-	 * 实现了一些接口的ImportBeanDefinitionRegistrar的@Import注入的类
+	 * 实如果这个类现了一些接口的ImportBeanDefinitionRegistrar的@Import注入的类
+	 * 以及这个类的对应的Metadata信息对象
 	 */
 	private final Map<ImportBeanDefinitionRegistrar, AnnotationMetadata> importBeanDefinitionRegistrars =
 			new LinkedHashMap<>();
@@ -131,6 +135,9 @@ final class ConfigurationClass {
 	public ConfigurationClass(Class<?> clazz, @Nullable ConfigurationClass importedBy) {
 		this.metadata = AnnotationMetadata.introspect(clazz);
 		this.resource = new DescriptiveResource(clazz.getName());
+		/**
+		 * 初始化父容器对应的外部类
+		 */
 		this.importedBy.add(importedBy);
 	}
 

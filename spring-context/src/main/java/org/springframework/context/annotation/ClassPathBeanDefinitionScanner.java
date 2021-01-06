@@ -162,9 +162,17 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		this.registry = registry;
 
+		/**
+		 * 设置默认的需要扫描的注解
+		 * 一般默认@Compontent
+		 *
+		 */
 		if (useDefaultFilters) {
 			registerDefaultFilters();
 		}
+
+
+
 		setEnvironment(environment);
 		setResourceLoader(resourceLoader);
 	}
@@ -271,33 +279,53 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 */
 	protected Set<BeanDefinitionHolder> doScan(String... basePackages) {
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
+
+
+
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
 		for (String basePackage : basePackages) {
 
 			/**
 			 * 扫描全部的文件夹下的注解类
+			 * 并封装成BeanDefinition对象
 			 */
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
+
+
 			for (BeanDefinition candidate : candidates) {
+
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
 				if (candidate instanceof AbstractBeanDefinition) {
+
+					//支持@Lazy，@DepedndOn注解
 					postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
 				}
+
 				if (candidate instanceof AnnotatedBeanDefinition) {
 					AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 				}
+
 				if (checkCandidate(beanName, candidate)) {
 					BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(candidate, beanName);
 					definitionHolder =
 							AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 					beanDefinitions.add(definitionHolder);
+
+					//BeanDefinition注册
 					registerBeanDefinition(definitionHolder, this.registry);
 				}
+
+
 			}
 		}
+
+
+
 		return beanDefinitions;
+
+
 	}
 
 	/**
