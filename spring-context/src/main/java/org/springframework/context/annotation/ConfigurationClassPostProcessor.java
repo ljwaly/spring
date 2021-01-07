@@ -415,6 +415,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 			/**
 			 * 已经解析完成了的类
+			 * 放入已解析的类的容器
 			 */
 			alreadyParsed.addAll(configClasses);
 

@@ -69,7 +69,7 @@ final class ConfigurationClass {
 	private final Set<BeanMethod> beanMethods = new LinkedHashSet<>();
 
 	/**
-	 * 如果这个类实现了一些接口BeanDefinitionReader，
+	 * 如果这个类，有@ImportResource注解导入的xml配置
 	 */
 	private final Map<String, Class<? extends BeanDefinitionReader>> importedResources =
 			new LinkedHashMap<>();

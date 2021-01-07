@@ -524,6 +524,9 @@ class ConfigurationClassParser {
 
 
 		// Process any @ImportResource annotations
+		/**
+		 * ImportResource导入一个xml配置文件
+		 */
 		AnnotationAttributes importResource =
 				AnnotationConfigUtils.attributesFor(sourceClass.getMetadata(), ImportResource.class);
 		if (importResource != null) {
@@ -531,17 +534,29 @@ class ConfigurationClassParser {
 			Class<? extends BeanDefinitionReader> readerClass = importResource.getClass("reader");
 			for (String resource : resources) {
 				String resolvedResource = this.environment.resolveRequiredPlaceholders(resource);
+				/**
+				 * 将configClass补充完整，xml配置的有的话
+				 */
 				configClass.addImportedResource(resolvedResource, readerClass);
 			}
 		}
 
+
+
+
 		// Process individual @Bean methods
+		/**
+		 * 注解@Bean的方法收集
+		 */
 		Set<MethodMetadata> beanMethods = retrieveBeanMethodMetadata(sourceClass);
 		for (MethodMetadata methodMetadata : beanMethods) {
 			configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass));
 		}
 
 		// Process default methods on interfaces
+		/**
+		 * 注解@Bean的方法接口处理
+		 */
 		processInterfaces(configClass, sourceClass);
 
 		// Process superclass, if any
@@ -647,7 +662,13 @@ class ConfigurationClassParser {
 	 */
 	private Set<MethodMetadata> retrieveBeanMethodMetadata(SourceClass sourceClass) {
 		AnnotationMetadata original = sourceClass.getMetadata();
+
+		/**
+		 * 拿到有@Bean注解的方法
+		 */
 		Set<MethodMetadata> beanMethods = original.getAnnotatedMethods(Bean.class.getName());
+
+
 		if (beanMethods.size() > 1 && original instanceof StandardAnnotationMetadata) {
 			// Try reading the class file via ASM for deterministic declaration order...
 			// Unfortunately, the JVM's standard reflection returns methods in arbitrary
