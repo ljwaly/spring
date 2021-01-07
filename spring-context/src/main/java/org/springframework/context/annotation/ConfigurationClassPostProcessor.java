@@ -273,11 +273,19 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 		this.factoriesPostProcessed.add(factoryId);
 		if (!this.registriesPostProcessed.contains(factoryId)) {
+
 			// BeanDefinitionRegistryPostProcessor hook apparently not supported...
 			// Simply call processConfigurationClasses lazily at this point then.
+			/**
+			 * 会根据标识进行区分，full和lite
+			 */
 			processConfigBeanDefinitions((BeanDefinitionRegistry) beanFactory);
 		}
 
+		/**
+		 * 这里会生成代理
+		 * 会根据标识进行区分，full和lite
+		 */
 		enhanceConfigurationClasses(beanFactory);
 		beanFactory.addBeanPostProcessor(new ImportAwareBeanPostProcessor(beanFactory));
 	}
@@ -397,10 +405,25 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 						registry, this.sourceExtractor, this.resourceLoader, this.environment,
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
+
+			/**
+			 * 注解@Bean，@ImportResource,@ImportBeanDefinitionRegistrar具体处理逻辑
+			 *
+			 * 将ConfigurationClass转化为BeanDefinition
+			 */
 			this.reader.loadBeanDefinitions(configClasses);
+
+			/**
+			 * 已经解析完成了的类
+			 */
 			alreadyParsed.addAll(configClasses);
 
 			candidates.clear();
+
+
+			/**
+			 * 比较差异，又走一遍解析流程
+			 */
 			if (registry.getBeanDefinitionCount() > candidateNames.length) {
 				String[] newCandidateNames = registry.getBeanDefinitionNames();
 				Set<String> oldCandidateNames = new HashSet<>(Arrays.asList(candidateNames));
@@ -463,6 +486,13 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					}
 				}
 			}
+
+
+			/**
+			 * 标识区分
+			 *
+			 *
+			 */
 			if (ConfigurationClassUtils.CONFIGURATION_CLASS_FULL.equals(configClassAttr)) {
 				if (!(beanDef instanceof AbstractBeanDefinition)) {
 					throw new BeanDefinitionStoreException("Cannot enhance @Configuration bean definition '" +

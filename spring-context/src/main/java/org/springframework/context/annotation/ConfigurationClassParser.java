@@ -244,7 +244,7 @@ class ConfigurationClassParser {
 
 		/**
 		 *
-		 * springboot实现ImportBeanDefinitionRegistrar接口比较多的情况下的，
+		 * springboot批量扫描@Import注入的类（实现了接口DeferredImportSelector的类），
 		 * 批量去处理
 		 *
 		 */
@@ -901,7 +901,7 @@ class ConfigurationClassParser {
 								this.environment, this.resourceLoader, this.registry);
 
 						/**
-						 * 在搜集过程中，已经调用了接口的实现
+						 * 在搜集过程中
 						 */
 						Predicate<String> selectorFilter = selector.getExclusionFilter();
 
@@ -919,7 +919,7 @@ class ConfigurationClassParser {
 						 * springboot中自动配置用到了
 						 */
 						if (selector instanceof DeferredImportSelector) {
-
+							//比较复杂，springboot中自动配置用到了
 							this.deferredImportSelectorHandler.handle(configClass, (DeferredImportSelector) selector);
 						}
 
@@ -1077,12 +1077,17 @@ class ConfigurationClassParser {
 	}
 
 	/**
+	 * 封装一个类的AnnotationMetadata信息的SourceClass对象
+	 *
 	 * Factory method to obtain a {@link SourceClass} from a class name.
 	 */
 	SourceClass asSourceClass(@Nullable String className, Predicate<String> filter) throws IOException {
+
 		if (className == null || filter.test(className)) {
 			return this.objectSourceClass;
 		}
+
+
 		if (className.startsWith("java")) {
 			// Never use ASM for core java types
 			try {
@@ -1092,6 +1097,10 @@ class ConfigurationClassParser {
 				throw new NestedIOException("Failed to load class [" + className + "]", ex);
 			}
 		}
+
+		/**
+		 * 获取一个类的AnnotationMetadata方式
+		 */
 		return new SourceClass(this.metadataReaderFactory.getMetadataReader(className));
 	}
 
@@ -1165,13 +1174,32 @@ class ConfigurationClassParser {
 		 * @param importSelector the selector to handle
 		 */
 		public void handle(ConfigurationClass configClass, DeferredImportSelector importSelector) {
+
+			/**
+			 * 首先：进行包装
+			 */
 			DeferredImportSelectorHolder holder = new DeferredImportSelectorHolder(configClass, importSelector);
+
+			//第一次进入，这个deferredImportSelectors容器是空的
 			if (this.deferredImportSelectors == null) {
+
+				/**
+				 * 创建了DeferredImportSelectorGroup接口处理类
+				 */
 				DeferredImportSelectorGroupingHandler handler = new DeferredImportSelectorGroupingHandler();
+
+				/**
+				 * 创建绑定关系
+				 */
 				handler.register(holder);
+
+				/**
+				 * 进行调用
+				 */
 				handler.processGroupImports();
 			}
 			else {
+				//第一次，直接放入容器
 				this.deferredImportSelectors.add(holder);
 			}
 		}
@@ -1183,7 +1211,13 @@ class ConfigurationClassParser {
 				if (deferredImports != null) {
 					DeferredImportSelectorGroupingHandler handler = new DeferredImportSelectorGroupingHandler();
 					deferredImports.sort(DEFERRED_IMPORT_COMPARATOR);
+					/**
+					 * 依次注册
+					 */
 					deferredImports.forEach(handler::register);
+					/**
+					 * 批量扫描@Import的注解
+					 */
 					handler.processGroupImports();
 				}
 			}
@@ -1196,28 +1230,74 @@ class ConfigurationClassParser {
 
 	private class DeferredImportSelectorGroupingHandler {
 
+		/**
+		 * key:实现了Group接口类全类名
+		 * value: 实现了Group接口类创建的实例的封装对象
+		 */
 		private final Map<Object, DeferredImportSelectorGrouping> groupings = new LinkedHashMap<>();
 
+		/**
+		 * 在register方法中，放入的AnnotationMetadata和ConfigurationClass绑定关系
+		 */
 		private final Map<AnnotationMetadata, ConfigurationClass> configurationClasses = new HashMap<>();
 
 		public void register(DeferredImportSelectorHolder deferredImport) {
-			Class<? extends Group> group = deferredImport.getImportSelector().getImportGroup();
+			/**
+			 * 调用实现了DeferredImportSelector.Group接口getImportGroup()方法，
+			 * 返回实现了Group的实现类的全类名
+			 */
+			Class<? extends Group> group = deferredImport.getImportSelector()
+					.getImportGroup();
+
+
+			/**
+			 * 建立实现了Group接口类全类名
+			 * 和DeferredImportSelectorGrouping的映射关系
+			 */
 			DeferredImportSelectorGrouping grouping = this.groupings.computeIfAbsent(
 					(group != null ? group : deferredImport),
 					key -> new DeferredImportSelectorGrouping(createGroup(group)));
 			grouping.add(deferredImport);
+
+
 			this.configurationClasses.put(deferredImport.getConfigurationClass().getMetadata(),
 					deferredImport.getConfigurationClass());
 		}
 
 		public void processGroupImports() {
+			/**
+			 * 拿到groupings所有实现了Group接口的实例对象
+			 */
 			for (DeferredImportSelectorGrouping grouping : this.groupings.values()) {
+
 				Predicate<String> exclusionFilter = grouping.getCandidateFilter();
-				grouping.getImports().forEach(entry -> {
+
+				/**
+				 * 实现类方法的调用
+				 *
+				 * 这里调用了Group对象，完成内部process()方法和selectImports()
+				 * 最终获取到了内部方法返回的List<Entry>对应的全类名和metadata封装对象的集合
+				 *
+				 */
+				grouping.getImports()
+						.forEach(entry -> {
+
+					/**
+					 * 从绑定关系中获取对应的引入的class（importByClass）
+					 * 由哪个类的Import引入的
+					 */
 					ConfigurationClass configurationClass = this.configurationClasses.get(entry.getMetadata());
+
+
 					try {
+
+						/**
+						 * 递归解析对应实例上的@Import注解
+						 */
 						processImports(configurationClass, asSourceClass(configurationClass, exclusionFilter),
+								//获取每个类的上面的@Import注解
 								Collections.singleton(asSourceClass(entry.getImportClassName(), exclusionFilter)),
+
 								exclusionFilter, false);
 					}
 					catch (BeanDefinitionStoreException ex) {
@@ -1234,6 +1314,10 @@ class ConfigurationClassParser {
 
 		private Group createGroup(@Nullable Class<? extends Group> type) {
 			Class<? extends Group> effectiveType = (type != null ? type : DefaultDeferredImportSelectorGroup.class);
+
+			/**
+			 * 通过反射，拿到Group对象
+			 */
 			return ParserStrategyUtils.instantiateClass(effectiveType, Group.class,
 					ConfigurationClassParser.this.environment,
 					ConfigurationClassParser.this.resourceLoader,
@@ -1267,6 +1351,9 @@ class ConfigurationClassParser {
 
 		private final DeferredImportSelector.Group group;
 
+		/**
+		 * 放入DeferredImportSelectorHolder封装了DeferredImportSelector的实现类
+		 */
 		private final List<DeferredImportSelectorHolder> deferredImports = new ArrayList<>();
 
 		DeferredImportSelectorGrouping(Group group) {
@@ -1282,10 +1369,22 @@ class ConfigurationClassParser {
 		 * @return each import with its associated configuration class
 		 */
 		public Iterable<Group.Entry> getImports() {
+
+			//获取所有实现了DeferredImportSelector的类的对象封装类DeferredImportSelectorHolder
 			for (DeferredImportSelectorHolder deferredImport : this.deferredImports) {
+
+				/**
+				 * 这里执行了实现group接口的process方法，
+				 * 初始化实现类里面的List<Entry>容器
+				 */
 				this.group.process(deferredImport.getConfigurationClass().getMetadata(),
 						deferredImport.getImportSelector());
 			}
+
+			/**
+			 *  这里执行了实现group接口的selectImports方法，
+			 *  返回上一步初始化的List<Entry>容器的全类名
+			 */
 			return this.group.selectImports();
 		}
 
@@ -1302,6 +1401,9 @@ class ConfigurationClassParser {
 	}
 
 
+	/**
+	 * 默认实现了Group的类
+	 */
 	private static class DefaultDeferredImportSelectorGroup implements Group {
 
 		private final List<Entry> imports = new ArrayList<>();

@@ -82,10 +82,16 @@ public interface DeferredImportSelector extends ImportSelector {
 
 			private final AnnotationMetadata metadata;
 
+			/**
+			 * 全类名
+			 */
 			private final String importClassName;
 
 			public Entry(AnnotationMetadata metadata, String importClassName) {
 				this.metadata = metadata;
+				/**
+				 * 全类名
+				 */
 				this.importClassName = importClassName;
 			}
 
