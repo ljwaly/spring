@@ -543,7 +543,16 @@ class ConstructorResolver {
 						mbd.constructorArgumentsResolved = true;
 						mbd.resolvedConstructorArguments = EMPTY_ARGS;
 					}
-					//实例化处对象，并把对象包装到bw中
+
+
+					/**
+					 * 采用代理模式，
+					 * 对工厂方法进行初始化
+					 * factoryBean
+					 * 注解@Bean方式
+					 *
+					 * 实例化处对象，并把对象包装到bw中
+					 */
 					bw.setBeanInstance(instantiate(beanName, mbd, factoryBean, uniqueCandidate, EMPTY_ARGS));
 					return bw;
 				}
@@ -714,6 +723,7 @@ class ConstructorResolver {
 
 				/**
 				 * 在这里，就是一个反射调用实例化
+				 * 这个情况下，是采用的工厂模式处理的
 				 */
 				return this.beanFactory.getInstantiationStrategy().instantiate(
 						mbd, beanName, this.beanFactory, factoryBean, factoryMethod, args);

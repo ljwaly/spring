@@ -53,6 +53,12 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 	 */
 	@Nullable
 	public static Method getCurrentlyInvokedFactoryMethod() {
+		/**
+		 * 注解Bean方法
+		 * 在factoryBean进行创建的时候
+		 * getBean初始化方法，这里才不为空，
+		 * 初始化完成，这里就是空了
+		 */
 		return currentlyInvokedFactoryMethod.get();
 	}
 
@@ -160,6 +166,10 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 				 * args为方法初始化需要的参数
 				 * 这个invoke调用为jdk的基本反射方法
 				 * 这个时候，会调用factory-method方法，可以在对应方法打断点验证
+				 *
+				 * 在这里进行调用的时候，进行代理方式调用，
+				 * 此时，会进入切面方法（创建BeanDefinition时候设定的代理对象，对象内部配置的拦截器MethodIntercepter），
+				 * 在切面方法中完成factory-method方法的调用，构建对象成功
 				 */
 				Object result = factoryMethod.invoke(factoryBean, args);
 

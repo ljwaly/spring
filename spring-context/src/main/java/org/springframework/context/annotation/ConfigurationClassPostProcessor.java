@@ -289,6 +289,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		 * CGLib代理
 		 */
 		enhanceConfigurationClasses(beanFactory);
+
+
+
 		beanFactory.addBeanPostProcessor(new ImportAwareBeanPostProcessor(beanFactory));
 	}
 
@@ -475,10 +478,23 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 * @see ConfigurationClassEnhancer
 	 */
 	public void enhanceConfigurationClasses(ConfigurableListableBeanFactory beanFactory) {
+
+
 		Map<String, AbstractBeanDefinition> configBeanDefs = new LinkedHashMap<>();
+
+
+		/**
+		 * 遍历容器中所有BeanDefinition，找到@Configuration的
+		 */
 		for (String beanName : beanFactory.getBeanDefinitionNames()) {
 			BeanDefinition beanDef = beanFactory.getBeanDefinition(beanName);
+
+			/**
+			 * 从BeanDefinition中拿到对应的full和lite的标记
+			 */
 			Object configClassAttr = beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE);
+
+
 			MethodMetadata methodMetadata = null;
 			if (beanDef instanceof AnnotatedBeanDefinition) {
 				methodMetadata = ((AnnotatedBeanDefinition) beanDef).getFactoryMethodMetadata();
@@ -499,10 +515,11 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			}
 
 
+
 			/**
 			 * 标识区分
-			 *
-			 *
+			 * 如果拿到BeanDefinition的full和lite标记的时候，
+			 * 在这里进行对比
 			 */
 			if (ConfigurationClassUtils.CONFIGURATION_CLASS_FULL.equals(configClassAttr)) {
 				if (!(beanDef instanceof AbstractBeanDefinition)) {
@@ -515,27 +532,64 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 							"is a non-static @Bean method with a BeanDefinitionRegistryPostProcessor " +
 							"return type: Consider declaring such methods as 'static'.");
 				}
+
+
+				/**
+				 * 此时，向configBeanDefs容器中添加这个BeanDefinition
+				 */
 				configBeanDefs.put(beanName, (AbstractBeanDefinition) beanDef);
+
 			}
 		}
+
+
 		if (configBeanDefs.isEmpty()) {
 			// nothing to enhance -> return immediately
 			return;
 		}
 
+
+
 		ConfigurationClassEnhancer enhancer = new ConfigurationClassEnhancer();
+
+		/**
+		 * 遍历包含full标记（即有@Configuration注解类的）容器
+		 *
+		 */
 		for (Map.Entry<String, AbstractBeanDefinition> entry : configBeanDefs.entrySet()) {
 			AbstractBeanDefinition beanDef = entry.getValue();
-			// If a @Configuration class gets proxied, always proxy the target class
+
+
+			/**
+			 * If a @Configuration class gets proxied, always proxy the target class
+			 * 设置使用代理方式创建Bean的标记
+			 */
 			beanDef.setAttribute(AutoProxyUtils.PRESERVE_TARGET_CLASS_ATTRIBUTE, Boolean.TRUE);
-			// Set enhanced subclass of the user-specified bean class
+
+
+			/**
+			 * Set enhanced subclass of the user-specified bean class
+			 */
 			Class<?> configClass = beanDef.getBeanClass();
+
+
+			/**
+			 * 创建运行时字节代理增强类，并把增强类的类名返回
+			 */
 			Class<?> enhancedClass = enhancer.enhance(configClass, this.beanClassLoader);
+
+
+
 			if (configClass != enhancedClass) {
 				if (logger.isTraceEnabled()) {
 					logger.trace(String.format("Replacing bean definition '%s' existing class '%s' with " +
 							"enhanced class '%s'", entry.getKey(), configClass.getName(), enhancedClass.getName()));
 				}
+
+				/**
+				 * 将代理增强类的类名放入BeanDefinition
+				 * 以供以后使用这个类名创建实例，放入spring容器
+				 */
 				beanDef.setBeanClass(enhancedClass);
 			}
 		}
