@@ -308,6 +308,9 @@ class ConfigurationClassParser {
 
 		/**
 		 * 自定义condition
+		 * 自定义matches方法如果返回为true，会绕过这里
+		 * 如果返回为false，则直接返回，不会将类加入configurationClasses，最终不进行BeanDefinition
+		 *
 		 * 对@Condition注解的支持
 		 * 过滤掉不需要实例化的类
 		 */
@@ -525,6 +528,8 @@ class ConfigurationClassParser {
 
 		// Process any @ImportResource annotations
 		/**
+		 * springboot以后用处不大，
+		 * 主要是加载xml配置文件
 		 * ImportResource导入一个xml配置文件
 		 */
 		AnnotationAttributes importResource =
@@ -536,6 +541,7 @@ class ConfigurationClassParser {
 				String resolvedResource = this.environment.resolveRequiredPlaceholders(resource);
 				/**
 				 * 将configClass补充完整，xml配置的有的话
+				 * 建立xml文件和reader的映射关系
 				 */
 				configClass.addImportedResource(resolvedResource, readerClass);
 			}
@@ -546,18 +552,31 @@ class ConfigurationClassParser {
 
 		// Process individual @Bean methods
 		/**
+		 * 处理@Bean，重点
+		 *
 		 * 注解@Bean的方法收集
 		 */
 		Set<MethodMetadata> beanMethods = retrieveBeanMethodMetadata(sourceClass);
 		for (MethodMetadata methodMetadata : beanMethods) {
+			/**
+			 * 加入到ConfigurationClass中
+			 */
 			configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass));
 		}
 
+
+
+
 		// Process default methods on interfaces
 		/**
-		 * 注解@Bean的方法接口处理
+		 * 注解接口里面方法有@Bean注解的，逻辑差不多
+		 * 不重要
 		 */
 		processInterfaces(configClass, sourceClass);
+
+
+
+
 
 		// Process superclass, if any
 		if (sourceClass.getMetadata().hasSuperClass()) {
@@ -916,7 +935,8 @@ class ConfigurationClassParser {
 						Class<?> candidateClass = candidate.loadClass();
 
 						/**
-						 * 反射实例化
+						 * 反射实例化，
+						 * 并没有加入spring容器
 						 */
 						ImportSelector selector = ParserStrategyUtils.instantiateClass(candidateClass, ImportSelector.class,
 								this.environment, this.resourceLoader, this.registry);
@@ -957,6 +977,8 @@ class ConfigurationClassParser {
 							 * 这里放回的就是一个全类名
 							 */
 							String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
+
+							//这里是对返回的全类名进行包装，然后在下一步进行包装了
 							Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames, exclusionFilter);
 
 							/**

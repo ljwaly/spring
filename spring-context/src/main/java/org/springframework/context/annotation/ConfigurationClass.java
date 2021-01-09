@@ -56,27 +56,31 @@ final class ConfigurationClass {
 	private String beanName;
 
 	/**
-	 * 装的是这个类对应的父容器，是由哪个外部类导入到这个类的
-	 *
-	 *
+	 * 当前这个类，对应的父容器，是由哪个外部类导入到这个类的
 	 */
 	private final Set<ConfigurationClass> importedBy = new LinkedHashSet<>(1);
 
 	/**
+	 * 当前这个类，
 	 * 注解@Configuration/@Compontent内部的@bean的方法
+	 * 区别：注解@Configuration可以保证通过@Bean注入的内部的方法都是一个单例对象（因为@Configuration生成了代理），而@Component无法保证
 	 * 方法的信息会包装到BeanMethod
 	 */
 	private final Set<BeanMethod> beanMethods = new LinkedHashSet<>();
 
 	/**
-	 * 如果这个类，有@ImportResource注解导入的xml配置
+	 * 当前这个类，有@ImportResource注解导入的xml配置
+	 * key:xml对应的地址
+	 * value：@ImportResource注解的reader属性对应的BeanDefinitionReader
 	 */
 	private final Map<String, Class<? extends BeanDefinitionReader>> importedResources =
 			new LinkedHashMap<>();
 
 	/**
-	 * 实如果这个类现了一些接口的ImportBeanDefinitionRegistrar的@Import注入的类
-	 * 以及这个类的对应的Metadata信息对象
+	 * 当前这个类（本测试用例中的com.ljw.spring.source.s1.beans.scanbean.Scanner,有@Import注解），
+	 * 注解@Import的类中有实现了ImportBeanDefinitionRegistrar接口
+	 * key:是@Import的几个类中有实现ImportBeanDefinitionRegistrar接口的实例对象，（不过接口的实例对象并没有放入spring容器）
+	 * value:当前类的的另一种封装形式SourceClass对象的成员变量-Metadata对象
 	 */
 	private final Map<ImportBeanDefinitionRegistrar, AnnotationMetadata> importBeanDefinitionRegistrars =
 			new LinkedHashMap<>();

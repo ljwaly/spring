@@ -285,6 +285,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		/**
 		 * 这里会生成代理
 		 * 会根据标识进行区分，full和lite
+		 *
+		 * CGLib代理
 		 */
 		enhanceConfigurationClasses(beanFactory);
 		beanFactory.addBeanPostProcessor(new ImportAwareBeanPostProcessor(beanFactory));
@@ -391,6 +393,14 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			 * 重要程度5
 			 * 其实就是把类上面的特殊注解解析出来，
 			 * 最终封装成BeanDefinition
+			 *
+			 * 解析收集注解
+			 * - @PropertySource
+			 * - @ComponentScan：在这个方法已经吧@Component注解的类放入BeanDefinition了
+			 * - @Import
+			 * - @ImportSource
+			 * - @Bean
+			 *
 			 */
 			parser.parse(candidates);
 

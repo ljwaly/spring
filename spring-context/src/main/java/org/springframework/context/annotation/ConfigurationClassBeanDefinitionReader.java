@@ -153,6 +153,11 @@ class ConfigurationClassBeanDefinitionReader {
 
 		/**
 		 * 被@Bean的走这个和内部类，变成BeanDefinition
+		 * 此种方式使用FactoryBean方式的BeanDefinition
+		 * 因为注解@Configuration和@Component有差别：
+		 *
+		 * 注解@Configuration可以保证通过@Bean注入的内部的方法都是一个单例对象，而@Component无法保证
+		 * 因为@Configuration生成了代理
 		 */
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
 			loadBeanDefinitionsForBeanMethod(beanMethod);
@@ -226,9 +231,14 @@ class ConfigurationClassBeanDefinitionReader {
 		MethodMetadata metadata = beanMethod.getMetadata();
 		String methodName = metadata.getMethodName();
 
+
+
+
+
+
 		// Do we need to mark the bean as skipped by its condition?
 		/**
-		 * condition条件判断
+		 * conditional条件判断,可以作用到方法上
 		 */
 		if (this.conditionEvaluator.shouldSkip(metadata, ConfigurationPhase.REGISTER_BEAN)) {
 			configClass.skippedBeanMethods.add(methodName);
@@ -260,8 +270,13 @@ class ConfigurationClassBeanDefinitionReader {
 			return;
 		}
 
+
+
+
+
 		/**
 		 * 创建BeanDefinition
+		 * 内部有搜集方法的注解的属性
 		 */
 		ConfigurationClassBeanDefinition beanDef = new ConfigurationClassBeanDefinition(configClass, metadata);
 		beanDef.setSource(this.sourceExtractor.extractSource(metadata, configClass.getResource()));
@@ -278,7 +293,18 @@ class ConfigurationClassBeanDefinitionReader {
 		}
 		else {
 			// instance @Bean method
+			/**
+			 * 注解@Bean方法会创建FactoryBean形式的BeanDefinition
+			 *
+			 * 初始化FactoryBean的Name
+			 *
+			 */
 			beanDef.setFactoryBeanName(configClass.getBeanName());
+
+
+			/**
+			 * 初始化FactoryBean的MethodName
+			 */
 			beanDef.setUniqueFactoryMethodName(methodName);
 		}
 
@@ -291,7 +317,7 @@ class ConfigurationClassBeanDefinitionReader {
 				SKIP_REQUIRED_CHECK_ATTRIBUTE, Boolean.TRUE);
 
 		/**
-		 * 补充BeanDefinition
+		 * 填充BeanDefinition
 		 */
 		AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDef, metadata);
 
@@ -341,6 +367,8 @@ class ConfigurationClassBeanDefinitionReader {
 			logger.trace(String.format("Registering bean definition for @Bean method %s.%s()",
 					configClass.getMetadata().getClassName(), beanName));
 		}
+
+
 
 		/**
 		 * spring容器注册BeanDefinition
@@ -445,6 +473,10 @@ class ConfigurationClassBeanDefinitionReader {
 	}
 
 	private void loadBeanDefinitionsFromRegistrars(Map<ImportBeanDefinitionRegistrar, AnnotationMetadata> registrars) {
+
+		/**
+		 * 实现对ImportBeanDefinitionRegistrar接口的调用
+		 */
 		registrars.forEach((registrar, metadata) ->
 				registrar.registerBeanDefinitions(metadata, this.registry, this.importBeanNameGenerator));
 	}

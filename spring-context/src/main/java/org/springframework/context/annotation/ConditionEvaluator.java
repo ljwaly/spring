@@ -78,6 +78,12 @@ class ConditionEvaluator {
 	 * @return if the item should be skipped
 	 */
 	public boolean shouldSkip(@Nullable AnnotatedTypeMetadata metadata, @Nullable ConfigurationPhase phase) {
+
+		/**
+		 * metadata是类的基本元数据信息
+		 *
+		 * 元数据信息中没有Conditional注解
+		 */
 		if (metadata == null || !metadata.isAnnotated(Conditional.class.getName())) {
 			return false;
 		}
@@ -91,20 +97,35 @@ class ConditionEvaluator {
 		}
 
 		List<Condition> conditions = new ArrayList<>();
+		/**
+		 * 获取@Conditional注解的value值
+		 *
+		 */
 		for (String[] conditionClasses : getConditionClasses(metadata)) {
 			for (String conditionClass : conditionClasses) {
+
+				/**
+				 * 反射实例化Condition对象
+				 */
 				Condition condition = getCondition(conditionClass, this.context.getClassLoader());
 				conditions.add(condition);
 			}
 		}
 
+		//排序
 		AnnotationAwareOrderComparator.sort(conditions);
 
+		/**
+		 * 遍历
+		 * 调用每一个condition的matches方法
+		 */
 		for (Condition condition : conditions) {
 			ConfigurationPhase requiredPhase = null;
 			if (condition instanceof ConfigurationCondition) {
 				requiredPhase = ((ConfigurationCondition) condition).getConfigurationPhase();
 			}
+
+			//调用matches方法
 			if ((requiredPhase == null || requiredPhase == phase) && !condition.matches(this.context, metadata)) {
 				return true;
 			}
@@ -115,13 +136,17 @@ class ConditionEvaluator {
 
 	@SuppressWarnings("unchecked")
 	private List<String[]> getConditionClasses(AnnotatedTypeMetadata metadata) {
+
+		//获取注解的Conditional属性值
 		MultiValueMap<String, Object> attributes = metadata.getAllAnnotationAttributes(Conditional.class.getName(), true);
 		Object values = (attributes != null ? attributes.get("value") : null);
 		return (List<String[]>) (values != null ? values : Collections.emptyList());
 	}
 
 	private Condition getCondition(String conditionClassName, @Nullable ClassLoader classloader) {
+		//获取class信息，通过classloader去加载类文件
 		Class<?> conditionClass = ClassUtils.resolveClassName(conditionClassName, classloader);
+		//进行类的反射实例化
 		return (Condition) BeanUtils.instantiateClass(conditionClass);
 	}
 
