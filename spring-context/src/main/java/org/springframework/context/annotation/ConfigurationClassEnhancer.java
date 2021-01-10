@@ -117,6 +117,19 @@ class ConfigurationClassEnhancer {
 
 		/**
 		 * 创建运行时字节代理增强类，这里只取类名，是为了创建BeanDefinition
+		 *
+		 * 在这个过程中，会在filter类的accept方法中，
+		 * 对比@Configuration注解的类的内部的@Bean方法，
+		 * 然后确定每一个@Bean方法调用的MethodInterceptor（CallBack）实现类是哪一个,这个实现类内部是切点方法
+		 * 实现类代理类的回调成员属性，此时完成代理类的创建
+		 *
+		 * 以上工作做完后，这个新建的代理类的类对象返回，进行BeanDefinition初始化
+		 *
+		 * 最终，在创建singoton的getBean方法中，
+		 * 采用factoryBean方式调用factoryMethod（@Configuration的@Bean方法），
+		 * 此时，走代理类类切点方法，实现完成bean初始化
+		 *
+		 *
 		 */
 		Class<?> enhancedClass = createClass(newEnhancer(configClass, classLoader));
 
@@ -173,6 +186,7 @@ class ConfigurationClassEnhancer {
 		/**
 		 * 这里只是返回了增强器代理类的全类名的类对象
 		 * 这个只是个类名
+		 * 这里会创建代理对象,确定代理类调用那一个callback的intercept方法
 		 */
 		Class<?> subclass = enhancer.createClass();
 		// Registering callbacks statically (as opposed to thread-local)
@@ -355,6 +369,9 @@ class ConfigurationClassEnhancer {
 				}
 			}
 
+
+
+
 			// To handle the case of an inter-bean method reference, we must explicitly check the
 			// container for already cached instances.
 
@@ -364,12 +381,26 @@ class ConfigurationClassEnhancer {
 			// is the same as that of referring to a FactoryBean within XML. See SPR-6602.
 			if (factoryContainsBean(beanFactory, BeanFactory.FACTORY_BEAN_PREFIX + beanName) &&
 					factoryContainsBean(beanFactory, beanName)) {
+
+
+				/**
+				 * 如果@Bean装配的是FactoryBean类型的类
+				 * 则在这里调用getBean创建普通类，并放入spring容器中
+				 */
 				Object factoryBean = beanFactory.getBean(BeanFactory.FACTORY_BEAN_PREFIX + beanName);
 				if (factoryBean instanceof ScopedProxyFactoryBean) {
 					// Scoped proxy factory beans are a special case and should not be further proxied
 				}
 				else {
+
+
 					// It is a candidate FactoryBean - go ahead with enhancement
+					/**
+					 * 通过spring内部的factoryBean的单例对象，
+					 * 在这里创建增强代理类
+					 * 并在代理类中设置回调方法（回调方法会对FactoryBean的getObject()方法特殊处理）
+					 * 在处理回调方法时候，会触发getBean方法
+					 */
 					return enhanceFactoryBean(factoryBean, beanMethod.getReturnType(), beanFactory, beanName);
 				}
 			}
@@ -576,6 +607,11 @@ class ConfigurationClassEnhancer {
 				// No getObject() method -> shouldn't happen, but as long as nobody is trying to call it...
 			}
 
+			/**
+			 * 针对FactoryBean类，创建代理类，
+			 * 并在代理类中设置回调方法（回调方法会对FactoryBean的getObject()方法特殊处理）
+			 * 在处理回调方法时候，会触发getBean方法
+			 */
 			return createCglibProxyForFactoryBean(factoryBean, beanFactory, beanName);
 		}
 
@@ -625,6 +661,10 @@ class ConfigurationClassEnhancer {
 				}
 			}
 
+			/**
+			 * 并在代理类中设置回调方法（回调方法会对FactoryBean的getObject()方法特殊处理）
+			 * 在处理回调方法时候，会触发getBean方法
+			 */
 			((Factory) fbProxy).setCallback(0, (MethodInterceptor) (obj, method, args, proxy) -> {
 				if (method.getName().equals("getObject") && args.length == 0) {
 					return beanFactory.getBean(beanName);

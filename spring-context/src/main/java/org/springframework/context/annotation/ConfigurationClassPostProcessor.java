@@ -287,6 +287,11 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		 * 会根据标识进行区分，full和lite
 		 *
 		 * CGLib代理
+		 *
+		 * 拿到FULL标记的所有类（有@Configuration注释类）
+		 * 这些类进行代理类字节码生成，
+		 * 并对类的BeanDefinition的beanClass属性进行初始化，改为代理类的全类名
+		 * 最终生成bean使用这个代理类的全类名
 		 */
 		enhanceConfigurationClasses(beanFactory);
 
@@ -520,6 +525,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			 * 标识区分
 			 * 如果拿到BeanDefinition的full和lite标记的时候，
 			 * 在这里进行对比
+			 * 拿到FULL标记的所有类（有@Configuration注释类）
 			 */
 			if (ConfigurationClassUtils.CONFIGURATION_CLASS_FULL.equals(configClassAttr)) {
 				if (!(beanDef instanceof AbstractBeanDefinition)) {
@@ -574,7 +580,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 
 			/**
-			 * 创建运行时字节代理增强类，并把增强类的类名返回
+			 * 运行时，生成字节代理增强类，
+			 * 并把代理类的全类名返回
+			 *
 			 */
 			Class<?> enhancedClass = enhancer.enhance(configClass, this.beanClassLoader);
 
@@ -589,6 +597,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				/**
 				 * 将代理增强类的类名放入BeanDefinition
 				 * 以供以后使用这个类名创建实例，放入spring容器
+				 * 创建bean的时候，使用这个代理类类名
 				 */
 				beanDef.setBeanClass(enhancedClass);
 			}

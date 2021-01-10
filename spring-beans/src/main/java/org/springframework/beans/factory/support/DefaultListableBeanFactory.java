@@ -546,7 +546,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							(mbd.hasBeanClass() || !mbd.isLazyInit() || isAllowEagerClassLoading()) &&
 									!requiresEagerInitForType(mbd.getFactoryBeanName()))) {
 						boolean isFactoryBean = isFactoryBean(beanName, mbd);
-						BeanDefinitionHolder dbd = mbd.getDecoratedDefinition();
+    						BeanDefinitionHolder dbd = mbd.getDecoratedDefinition();
 						boolean matchFound = false;
 						boolean allowFactoryBeanInit = (allowEagerInit || containsSingleton(beanName));
 						boolean isNonLazyDecorated = (dbd != null && !mbd.isLazyInit());
