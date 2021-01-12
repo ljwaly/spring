@@ -203,7 +203,9 @@ public abstract class BeanUtils {
 				}
 
 
-				// 构造方法对象通过newInstance方法传入参数反射调用获取对象
+				/**
+				 * 调用无参构造方法反射创建实例
+				 */
 				return ctor.newInstance(argsWithDefaultValues);
 
 

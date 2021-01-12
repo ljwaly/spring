@@ -26,15 +26,14 @@ import org.springframework.lang.Nullable;
  * information; {@code printStackTrace} and other like methods will
  * delegate to the wrapped exception, if any.
  *
- * <p>The similarity between this class and the {@link NestedCheckedException}
+ * <p>The similarity between this class and the {@link }
  * class is unavoidable, as Java forces these two classes to have different
  * superclasses (ah, the inflexibility of concrete inheritance!).
  *
  * @author Rod Johnson
  * @author Juergen Hoeller
  * @see #getMessage
- * @see #printStackTrace
- * @see NestedCheckedException
+
  */
 public abstract class NestedRuntimeException extends RuntimeException {
 

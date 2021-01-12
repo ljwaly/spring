@@ -40,6 +40,9 @@ public class AspectJAroundAdvice extends AbstractAspectJAdvice implements Method
 	public AspectJAroundAdvice(
 			Method aspectJAroundAdviceMethod, AspectJExpressionPointcut pointcut, AspectInstanceFactory aif) {
 
+		/**
+		 * 一般使用MethodIntercept方式
+		 */
 		super(aspectJAroundAdviceMethod, pointcut, aif);
 	}
 

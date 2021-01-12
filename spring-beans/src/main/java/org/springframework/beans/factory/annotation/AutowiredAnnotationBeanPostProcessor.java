@@ -782,6 +782,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			}
 			if (value != null) {
 				ReflectionUtils.makeAccessible(field);
+
 				/**
 				 * 反射将bean赋值
 				 */
@@ -810,13 +811,12 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 		@Override
 		protected void inject(Object bean, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
+
+
 			/**
 			 * 依赖注入-5
 			 * 方法的依赖注入
-			 *
-			 *
 			 */
-
 
 			if (checkPropertySkipping(pvs)) {
 				return;
@@ -842,14 +842,18 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					try {
 
 						/**
-						 * 这里对方法的参数进行getBean实例化处理
+						 * 这对各个参数进行getBean实例化注入操作
 						 */
 						Object arg = beanFactory.resolveDependency(currDesc, beanName, autowiredBeans, typeConverter);
 						if (arg == null && !this.required) {
 							arguments = null;
 							break;
 						}
-						//方法入参初始化到对应的数组里面，如果是引用类型，就是对象（的地址）
+
+						/**
+						 * 方法入参树池虎啊到对应的数组里面，
+						 * 如果是引用类型，就是对象（的地址）
+						 */
 						arguments[i] = arg;
 					}
 					catch (BeansException ex) {
@@ -884,10 +888,14 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			}
 			if (arguments != null) {
 				try {
-					// 将方法变为可以访问
+					/**
+					 * 将方法设定为可以反射调用
+					 */
 					ReflectionUtils.makeAccessible(method);
 
-					//反射调用
+					/**
+					 * 反射调用
+					 */
 					method.invoke(bean, arguments);
 				}
 				catch (InvocationTargetException ex) {
