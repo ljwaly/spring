@@ -252,12 +252,24 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	}
 
 
+	/**
+	 * 实现这个接口MergedBeanDefinitionPostProcessor,
+	 * 完成对构造方法的注解的扫描搜集
+	 *
+	 *
+	 * @param beanDefinition
+	 * @param beanType
+	 * @param beanName
+	 */
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
 		/**
 		 * 核心代码
+		 *
+		 * 成对构造方法的注解的-扫描-搜集
 		 */
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, beanType, null);
+
 		metadata.checkConfigMembers(beanDefinition);
 	}
 
@@ -429,6 +441,16 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		return (candidateConstructors.length > 0 ? candidateConstructors : null);
 	}
 
+	/**
+	 * 继承这个类InstantiationAwareBeanPostProcessorAdapter
+	 * 完成对@Autowired的依赖注入
+	 *
+	 *
+	 * @param pvs
+	 * @param bean
+	 * @param beanName
+	 * @return
+	 */
 	@Override
 	public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
 
