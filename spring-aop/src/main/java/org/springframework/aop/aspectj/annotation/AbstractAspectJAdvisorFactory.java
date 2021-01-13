@@ -77,10 +77,16 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 	 */
 	@Override
 	public boolean isAspect(Class<?> clazz) {
+		/**
+		 * 判断有没有 @Aspect注解
+		 */
 		return (hasAspectAnnotation(clazz) && !compiledByAjc(clazz));
 	}
 
 	private boolean hasAspectAnnotation(Class<?> clazz) {
+		/**
+		 * 判断有没有 @Aspect注解
+		 */
 		return (AnnotationUtils.findAnnotation(clazz, Aspect.class) != null);
 	}
 
@@ -130,8 +136,19 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 	@SuppressWarnings("unchecked")
 	@Nullable
 	protected static AspectJAnnotation<?> findAspectJAnnotationOnMethod(Method method) {
+
+		/**
+		 * ASPECTJ_ANNOTATION_CLASSES就是那几个advice增强
+		 */
 		for (Class<?> clazz : ASPECTJ_ANNOTATION_CLASSES) {
+
+			/**
+			 * 找到几个advice注解的方法，
+			 * 并把注解里面的信息封装成AspectJAnnotation
+			 */
 			AspectJAnnotation<?> foundAnnotation = findAnnotation(method, (Class<Annotation>) clazz);
+
+
 			if (foundAnnotation != null) {
 				return foundAnnotation;
 			}
@@ -141,8 +158,19 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 
 	@Nullable
 	private static <A extends Annotation> AspectJAnnotation<A> findAnnotation(Method method, Class<A> toLookFor) {
+
+		/**
+		 * 找方法上的Advice注解
+		 */
 		A result = AnnotationUtils.findAnnotation(method, toLookFor);
+
+
 		if (result != null) {
+			/**
+			 * 找到有注解，就包装成一个AspectJAnnotation对象‘
+			 *
+			 * 在构造方法中做了很多方法上注解内容的解析处理
+			 */
 			return new AspectJAnnotation<>(result);
 		}
 		else {
@@ -193,9 +221,21 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 			this.annotation = annotation;
 			this.annotationType = determineAnnotationType(annotation);
 			try {
+
+				/**
+				 * 解析注解上的表达式，如@Around（"pc1()"）
+				 * 注解@AfterReturning（pointcut = "execution(public * com.ljw.spring.source.s1.service.*.*(..))")
+				 */
 				this.pointcutExpression = resolveExpression(annotation);
+
+				/**
+				 * 获取注解上的参数
+				 */
 				Object argNames = AnnotationUtils.getValue(annotation, "argNames");
+
+
 				this.argumentNames = (argNames instanceof String ? (String) argNames : "");
+
 			}
 			catch (Exception ex) {
 				throw new IllegalArgumentException(annotation + " is not a valid AspectJ annotation", ex);

@@ -88,6 +88,9 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 		this.declaringClass = aspectJAdviceMethod.getDeclaringClass();
 		this.methodName = aspectJAdviceMethod.getName();
 		this.parameterTypes = aspectJAdviceMethod.getParameterTypes();
+		/**
+		 * aspectJAdviceMethod是构建这个Advisor对象的时候，传入的非Pointcut方法
+		 */
 		this.aspectJAdviceMethod = aspectJAdviceMethod;
 		this.aspectJAdvisorFactory = aspectJAdvisorFactory;
 		this.aspectInstanceFactory = aspectInstanceFactory;
@@ -113,6 +116,8 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 
 			/**
 			 * 这里方法着重看，重要程度5
+			 *
+			 * 构造方法内部创建Advice对象
 			 */
 			this.instantiatedAdvice = instantiateAdvice(this.declaredPointcut);
 		}
@@ -153,6 +158,8 @@ final class InstantiationModelAwarePointcutAdvisorImpl
 
 		/**
 		 * 获取Advice对象
+		 *
+		 * aspectJAdviceMethod是构建这个Advisor对象的时候，传入的非Pointcut方法
 		 */
 		Advice advice = this.aspectJAdvisorFactory.getAdvice(this.aspectJAdviceMethod, pointcut,
 				this.aspectInstanceFactory, this.declarationOrder, this.aspectName);

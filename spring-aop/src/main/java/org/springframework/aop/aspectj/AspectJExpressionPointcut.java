@@ -195,6 +195,12 @@ public class AspectJExpressionPointcut extends AbstractExpressionPointcut
 		}
 		if (this.pointcutExpression == null) {
 			this.pointcutClassLoader = determinePointcutClassLoader();
+
+			/**
+			 * 这里会根据@Around（"pc1()"）配置中的pc1方法
+			 * 找到真正的Pointcut表达是
+			 *
+			 */
 			this.pointcutExpression = buildPointcutExpression(this.pointcutClassLoader);
 		}
 		return this.pointcutExpression;
@@ -224,6 +230,11 @@ public class AspectJExpressionPointcut extends AbstractExpressionPointcut
 			pointcutParameters[i] = parser.createPointcutParameter(
 					this.pointcutParameterNames[i], this.pointcutParameterTypes[i]);
 		}
+
+		/**
+		 * 这里会根据@Around（"pc1()"）配置中的pc1方法
+		 * 找到真正的Pointcut表达是
+		 */
 		return parser.parsePointcutExpression(replaceBooleanOperators(resolveExpression()),
 				this.pointcutDeclarationScope, pointcutParameters);
 	}
@@ -269,10 +280,25 @@ public class AspectJExpressionPointcut extends AbstractExpressionPointcut
 
 	@Override
 	public boolean matches(Class<?> targetClass) {
+
+		/**
+		 * 这里会根据@Around（"pc1()"）配置中的pc1方法
+		 * 找到真正的Pointcut表达是
+		 */
 		PointcutExpression pointcutExpression = obtainPointcutExpression();
+
+
 		try {
 			try {
+
+				/**
+				 *  匹配targetClass是否存在表达式
+				 *
+				 *  就是这个类是否在配置的包里面
+				 */
 				return pointcutExpression.couldMatchJoinPointsInType(targetClass);
+
+
 			}
 			catch (ReflectionWorldException ex) {
 				logger.debug("PointcutExpression matching rejected target class - trying fallback expression", ex);

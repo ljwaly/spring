@@ -76,9 +76,14 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 			Class<?> beanClass, String beanName, @Nullable TargetSource targetSource) {
 
 		/**
-		 * 找到所有的advisor
+		 * 重点看
+		 *
+		 * 找到合格的切面：advisor
+		 *
 		 */
 		List<Advisor> advisors = findEligibleAdvisors(beanClass, beanName);
+
+
 		if (advisors.isEmpty()) {
 			return DO_NOT_PROXY;
 		}
@@ -96,21 +101,39 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 * @see #extendAdvisors
 	 */
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
+
+
 		/**
+		 * 找到候选的切面，
+		 * 其实就是一个寻找有@Aspectj注解的过程
+		 * 把工程中所有有这个注解的类封装成Advisor返回
 		 *
+		 * 这里有2个实现类
+		 * 先调用实际的子类实现类：AnnotationAwareAspectJAutoProxyCreator
+		 * 子类实现类内部会调用父类的这个方法
 		 */
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
+
+
+
 		/**
+		 *
 		 * 是一个匹配过程
+		 * 判断候选的切面是否作用在当前的beanClass上面
+		 *
 		 */
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
+
+
+
+
 
 		extendAdvisors(eligibleAdvisors);
 
 
 		if (!eligibleAdvisors.isEmpty()) {
 			/**
-			 *
+			 * 对有@Order@Priority进行排序
 			 */
 			eligibleAdvisors = sortAdvisors(eligibleAdvisors);
 		}
@@ -123,6 +146,13 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 */
 	protected List<Advisor> findCandidateAdvisors() {
 		Assert.state(this.advisorRetrievalHelper != null, "No BeanFactoryAdvisorRetrievalHelper available");
+		/**
+		 * 这个方法搜索的是自定义的Advisor，
+		 * 自己去实现Pointcut
+		 *
+		 * 一般情况下，这个需要对切面比较熟悉
+		 * 建议不熟悉的使用@Aspect
+		 */
 		return this.advisorRetrievalHelper.findAdvisorBeans();
 	}
 
@@ -140,7 +170,17 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 
 		ProxyCreationContext.setCurrentProxiedBeanName(beanName);
 		try {
+
+
+			/**
+			 *
+			 * 看看当前类是否在这些切面的Pointcut中..
+			 * 调用类和方法的match过程
+			 * 
+			 */
 			return AopUtils.findAdvisorsThatCanApply(candidateAdvisors, beanClass);
+
+
 		}
 		finally {
 			ProxyCreationContext.setCurrentProxiedBeanName(null);

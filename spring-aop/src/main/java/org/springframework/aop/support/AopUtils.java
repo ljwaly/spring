@@ -225,12 +225,20 @@ public abstract class AopUtils {
 		Assert.notNull(pc, "Pointcut must not be null");
 
 		/**
+		 * 类匹配
+		 *
 		 * 调用ClassFilter的matches方法，判断类是否匹配
 		 */
 		if (!pc.getClassFilter().matches(targetClass)) {
 			return false;
 		}
 
+
+		/**
+		 * 方法匹配
+		 *
+		 *
+		 */
 		MethodMatcher methodMatcher = pc.getMethodMatcher();
 		if (methodMatcher == MethodMatcher.TRUE) {
 			// No need to iterate the methods if we're matching any method anyway...
@@ -248,6 +256,12 @@ public abstract class AopUtils {
 		}
 		classes.addAll(ClassUtils.getAllInterfacesForClassAsSet(targetClass));
 
+
+		/**
+		 * 判断类中方法是否匹配
+		 * 有些可能是方法上面有注解拦截，
+		 * 所有需要判断方法是否匹配
+		 */
 		for (Class<?> clazz : classes) {
 			Method[] methods = ReflectionUtils.getAllDeclaredMethods(clazz);
 			for (Method method : methods) {
@@ -286,9 +300,12 @@ public abstract class AopUtils {
 	 */
 	public static boolean canApply(Advisor advisor, Class<?> targetClass, boolean hasIntroductions) {
 		if (advisor instanceof IntroductionAdvisor) {
+			// 过滤引介
 			return ((IntroductionAdvisor) advisor).getClassFilter().matches(targetClass);
 		}
+
 		else if (advisor instanceof PointcutAdvisor) {
+
 			PointcutAdvisor pca = (PointcutAdvisor) advisor;
 			/**
 			 * 拿到Advisor对象
@@ -310,18 +327,25 @@ public abstract class AopUtils {
 	 * (may be the incoming List as-is)
 	 */
 	public static List<Advisor> findAdvisorsThatCanApply(List<Advisor> candidateAdvisors, Class<?> clazz) {
+
 		if (candidateAdvisors.isEmpty()) {
 			return candidateAdvisors;
 		}
 		List<Advisor> eligibleAdvisors = new ArrayList<>();
+
+
+
 		for (Advisor candidate : candidateAdvisors) {
+
 			/**
-			 *
+			 * 如果是一个引介切面并匹配
 			 */
 			if (candidate instanceof IntroductionAdvisor && canApply(candidate, clazz)) {
 				eligibleAdvisors.add(candidate);
 			}
 		}
+
+
 		boolean hasIntroductions = !eligibleAdvisors.isEmpty();
 
 		/**
@@ -331,12 +355,16 @@ public abstract class AopUtils {
 		for (Advisor candidate : candidateAdvisors) {
 			if (candidate instanceof IntroductionAdvisor) {
 				// already processed
+				/**
+				 * 如果是引介，已经在上一个for循环处理过了，直接绕过去
+				 */
 				continue;
 			}
 
 
 			/**
-			 *
+			 * candidate是切面
+			 * clazz是类
 			 */
 			if (canApply(candidate, clazz, hasIntroductions)) {
 				eligibleAdvisors.add(candidate);

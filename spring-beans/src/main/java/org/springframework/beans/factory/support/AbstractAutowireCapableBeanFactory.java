@@ -2122,12 +2122,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 		if (mbd == null || !mbd.isSynthetic()) {
 
+
+
 			/**
-			 * 重要程度5
-			 *
-			 * 对bean的BeanPostProcessor的after方法的处理
-			 *
 			 * **AOP处理**
+			 *
+			 * 重要程度5
+			 * 对bean的BeanPostProcessor的after方法的处理
 			 *
 			 */
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);

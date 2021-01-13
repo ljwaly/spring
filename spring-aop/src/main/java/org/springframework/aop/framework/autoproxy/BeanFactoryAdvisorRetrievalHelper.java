@@ -65,20 +65,46 @@ public class BeanFactoryAdvisorRetrievalHelper {
 	 * @see #isEligibleBean
 	 */
 	public List<Advisor> findAdvisorBeans() {
+		/**
+		 * 这个方法搜索的是自定义的Advisor，
+		 * 自己去实现Pointcut
+		 *
+		 * 一般情况下，这个需要对切面比较熟悉
+		 * 建议不熟悉的使用@Aspect
+		 *
+		 *
+		 */
+
+
+
 		// Determine list of advisor bean names, if not cached already.
 		String[] advisorNames = this.cachedAdvisorBeanNames;
+
+
 		if (advisorNames == null) {
 			// Do not initialize FactoryBeans here: We need to leave all regular beans
 			// uninitialized to let the auto-proxy creator apply to them!
+			/**
+			 * 先找到所有的Advisor.class
+			 *
+			 * 如果自己写一个类，实现这个Advisor的接口
+			 *
+			 */
 			advisorNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 					this.beanFactory, Advisor.class, true, false);
 			this.cachedAdvisorBeanNames = advisorNames;
 		}
+
+
+
 		if (advisorNames.length == 0) {
 			return new ArrayList<>();
 		}
 
 		List<Advisor> advisors = new ArrayList<>();
+		/**
+		 * 循环遍历
+		 */
 		for (String name : advisorNames) {
 			if (isEligibleBean(name)) {
 				if (this.beanFactory.isCurrentlyInCreation(name)) {
@@ -88,6 +114,9 @@ public class BeanFactoryAdvisorRetrievalHelper {
 				}
 				else {
 					try {
+						/**
+						 * 把这种自定义的Advisor实例实例化，然后放入容器
+						 */
 						advisors.add(this.beanFactory.getBean(name, Advisor.class));
 					}
 					catch (BeanCreationException ex) {

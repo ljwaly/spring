@@ -89,25 +89,67 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 				if (aspectNames == null) {
 					List<Advisor> advisors = new ArrayList<>();
 					aspectNames = new ArrayList<>();
+
+
+					/**
+					 * 拿到所有的类的beanNames,因为这里是 Object.class类型的
+					 *
+					 *
+					 */
 					String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 							this.beanFactory, Object.class, true, false);
+
+					/**
+					 * 遍历
+					 */
 					for (String beanName : beanNames) {
+
+
 						if (!isEligibleBean(beanName)) {
 							continue;
 						}
+
+
 						// We must be careful not to instantiate beans eagerly as in this case they
 						// would be cached by the Spring container but would not have been weaved.
 						Class<?> beanType = this.beanFactory.getType(beanName);
 						if (beanType == null) {
 							continue;
 						}
+
+						/**
+						 * 判断类上是否有@Aspect注解
+						 */
 						if (this.advisorFactory.isAspect(beanType)) {
+
+							//如果有，就是我们需要的
 							aspectNames.add(beanName);
+
 							AspectMetadata amd = new AspectMetadata(beanType, beanName);
 							if (amd.getAjType().getPerClause().getKind() == PerClauseKind.SINGLETON) {
+
+								/**
+								 * 创建获取有@Aspect注解类的实例工厂，
+								 * 负责获取有@Aspect注解类的实例
+								 *
+								 * 这个beanName是
+								 * 这个beanFactory是
+								 *
+								 */
 								MetadataAwareAspectInstanceFactory factory =
 										new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
+
+								/**
+								 * 重点部分5
+								 *
+								 * 创建切面advisor对象
+								 *
+								 * 这个advisorFactory是
+								 */
 								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
+
+
+
 								if (this.beanFactory.isSingleton(beanName)) {
 									this.advisorsCache.put(beanName, classAdvisors);
 								}

@@ -85,24 +85,49 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 				new BeanFactoryAspectJAdvisorsBuilderAdapter(beanFactory, this.aspectJAdvisorFactory);
 	}
 
-
+	/**
+	 * 这个方法搜索的是自定义的Advisor，
+	 * 自己去实现Pointcut
+	 *
+	 * 一般情况下，这个需要对切面比较熟悉
+	 * 建议不熟悉的使用@Aspect
+	 */
 	@Override
 	protected List<Advisor> findCandidateAdvisors() {
 
 		// Add all the Spring advisors found according to superclass rules.
 		/**
-		 * 找到所有的Advisor
+		 * 查找所有的Advisor
+		 *
+		 * 这个是找父类的Advisor
+		 * 即AbstractAdvisorAutoProxyCreator
+		 *
+		 * 这个方法搜索的是自定义的Advisor，
+		 * 自己去实现Pointcut
+		 *
+		 * 一般情况下，这个需要对切面比较熟悉
+		 * 建议不熟悉的使用@Aspect
 		 */
 		List<Advisor> advisors = super.findCandidateAdvisors();
 
 
+
+
 		// Build Advisors for all AspectJ aspects in the bean factory.
 		if (this.aspectJAdvisorsBuilder != null) {
+
+
+
 			/**
-			 * 主要看这里，创建候选的切面，
-			 * 对@Aspect注解类进行处理
-			 * 接卸所有的@Aroud,@Before,@After,
+			 * 注解@Aspect是这里的
 			 *
+			 * 主要看这里，创建候选的切面Advisor，
+			 * 对@Aspect注解类进行处理
+			 * 解析所有的@Aroud,@Before,@After,等对应的Advice注解
+			 *
+			 * 我这边项目中的logging的AOP注解方式的解析
+			 *
+			 * 这里创建Advisor，内部成员变量包含Pointcu和Advice
 			 */
 			advisors.addAll(this.aspectJAdvisorsBuilder.buildAspectJAdvisors());
 		}

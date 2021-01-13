@@ -301,7 +301,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (bean != null) {
 			Object cacheKey = getCacheKey(bean.getClass(), beanName);
 			/**
-			 * 如果缓存中没有，则创建
+			 * 如果缓存中没有，则创建，是否生成过代理
 			 */
 			if (this.earlyProxyReferences.remove(cacheKey) != bean) {
 
@@ -361,26 +361,47 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		// Create proxy if we have advice.
 		/**
 		 *
+		 * 重点看，重要程度5
 		 *
+		 * 创建当前bean的代理，如果这个bean有advisor的话
+		 * 判断当前实例化的bean有没有切面
+		 * 
 		 */
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 
+
+
+
+		/**
+		 * 如果有切面，则生产该bean的代理
+		 */
 		if (specificInterceptors != DO_NOT_PROXY) {
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
 
 			/**
 			 *
-			 *
+			 * 把被代理对象的实例封装到SingletonTargetSource对象中
 			 */
 			Object proxy = createProxy(
 					bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
 
 
 			this.proxyTypes.put(cacheKey, proxy.getClass());
+
+
+			/**
+			 * 最终返回了代理对象，
+			 * 一级缓存池中存储了代理的对象
+			 */
 			return proxy;
 		}
 
+		/**
+		 * 如果当前的bean不是代理类，直接放入标记
+		 */
 		this.advisedBeans.put(cacheKey, Boolean.FALSE);
+
+
 		return bean;
 	}
 
