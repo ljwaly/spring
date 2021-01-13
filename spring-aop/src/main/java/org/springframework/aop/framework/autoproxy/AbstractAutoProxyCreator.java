@@ -299,6 +299,13 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			 * 如果缓存中没有，则创建
 			 */
 			if (this.earlyProxyReferences.remove(cacheKey) != bean) {
+
+				/**
+				 * 这里进行处理Aop的
+				 *
+				 *
+				 * Aop-1
+				 */
 				return wrapIfNecessary(bean, beanName, cacheKey);
 			}
 		}
