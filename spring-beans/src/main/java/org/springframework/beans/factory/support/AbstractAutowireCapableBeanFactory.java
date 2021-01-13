@@ -447,11 +447,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 			/**
 			 * 处理关注这个事件的BeanPostProcessor
-			 *
-			 * AbstractAdvisingBeanPostProcessor：其中有AOP的核心处理方法
 			 * ApplicationListenerDetector：通过@Compontent注解实现的ApplicationListener
 			 *
+			 * AbstractAdvisingBeanPostProcessor：其中有AOP的核心处理方法??
+			 *
 			 * 如果设定了Aspect切面，则优先进入AbstractAutoProxyCreator去处理Aop
+			 *   AbstractAutoProxyCreator
 			 */
 			Object current = processor.postProcessAfterInitialization(result, beanName);
 			if (current == null) {
@@ -2126,7 +2127,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 *
 			 * 对bean的BeanPostProcessor的after方法的处理
 			 *
-			 * AOP处理
+			 * **AOP处理**
 			 *
 			 */
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);

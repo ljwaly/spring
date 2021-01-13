@@ -90,6 +90,11 @@ public abstract class AopConfigUtils {
 
 	@Nullable
 	public static BeanDefinition registerAspectJAnnotationAutoProxyCreatorIfNecessary(BeanDefinitionRegistry registry) {
+		/**
+		 *
+		 * 将AnnotationAwareAspectJAutoProxyCreator这个实现类注入spring容器
+		 * 这个类实现了BeanPostProcessor处理器接口
+		 */
 		return registerAspectJAnnotationAutoProxyCreatorIfNecessary(registry, null);
 	}
 
@@ -97,6 +102,11 @@ public abstract class AopConfigUtils {
 	public static BeanDefinition registerAspectJAnnotationAutoProxyCreatorIfNecessary(
 			BeanDefinitionRegistry registry, @Nullable Object source) {
 
+		/**
+		 *
+		 * 将AnnotationAwareAspectJAutoProxyCreator这个实现类注入spring容器
+		 * 这个类实现了BeanPostProcessor处理器接口
+		 */
 		return registerOrEscalateApcAsRequired(AnnotationAwareAspectJAutoProxyCreator.class, registry, source);
 	}
 

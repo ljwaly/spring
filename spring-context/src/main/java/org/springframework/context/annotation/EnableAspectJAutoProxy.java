@@ -119,6 +119,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+/**
+ * 注解@Import作用AspectJAutoProxyRegistrar
+ * 将AnnotationAwareAspectJAutoProxyCreator这个实现类注入spring容器
+ */
 @Import(AspectJAutoProxyRegistrar.class)
 public @interface EnableAspectJAutoProxy {
 

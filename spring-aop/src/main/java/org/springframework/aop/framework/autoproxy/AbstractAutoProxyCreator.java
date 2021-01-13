@@ -293,6 +293,11 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 */
 	@Override
 	public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
+
+		/**
+		 * 这个是最外层Bean的for循环BeanNames进来的
+		 * 是这个当前bean的代理
+		 */
 		if (bean != null) {
 			Object cacheKey = getCacheKey(bean.getClass(), beanName);
 			/**
@@ -304,7 +309,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 				 * 这里进行处理Aop的
 				 *
 				 *
-				 * Aop-1
+				 * 开始Aop-1
 				 */
 				return wrapIfNecessary(bean, beanName, cacheKey);
 			}
