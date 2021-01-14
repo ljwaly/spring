@@ -496,10 +496,14 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		}
 
 		ProxyFactory proxyFactory = new ProxyFactory();
+
+		/**
+		 * 把AnnotationAwareAspectJAutoProxyCreator中的某些属性copy到proxyFactory中
+		 */
 		proxyFactory.copyFrom(this);
 
 		if (!proxyFactory.isProxyTargetClass()) {
-			if (shouldProxyTargetClass(beanClass, beanName)) {
+			if (shouldProxyTargetClass(beanClass, beanName)) {//是否是接口，接口要用jdk代理
 				proxyFactory.setProxyTargetClass(true);
 			}
 			else {
@@ -507,7 +511,13 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			}
 		}
 
+
+		/**
+		 * 组装切面
+		 */
 		Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
+
+
 		proxyFactory.addAdvisors(advisors);
 		proxyFactory.setTargetSource(targetSource);
 		customizeProxyFactory(proxyFactory);
@@ -594,10 +604,21 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		BeanFactory bf = this.beanFactory;
 		ConfigurableBeanFactory cbf = (bf instanceof ConfigurableBeanFactory ? (ConfigurableBeanFactory) bf : null);
 		List<Advisor> advisors = new ArrayList<>();
+
+		/**
+		 *
+		 * 可以在拿到this这个类，
+		 * 把interceptorNames的属性赋予一些接口对象（类似advisor）
+		 *
+		 */
 		for (String beanName : this.interceptorNames) {
 			if (cbf == null || !cbf.isCurrentlyInCreation(beanName)) {
 				Assert.state(bf != null, "BeanFactory required for resolving interceptor names");
 				Object next = bf.getBean(beanName);
+
+				/**
+				 * wrap
+				 */
 				advisors.add(this.advisorAdapterRegistry.wrap(next));
 			}
 		}

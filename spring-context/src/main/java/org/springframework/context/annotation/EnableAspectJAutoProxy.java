@@ -129,6 +129,10 @@ public @interface EnableAspectJAutoProxy {
 	/**
 	 * Indicate whether subclass-based (CGLIB) proxies are to be created as opposed
 	 * to standard Java interface-based proxies. The default is {@code false}.
+	 *
+	 *
+	 * true：表示只能用cglib的代理
+	 * false：表示用jdk代理，不过如果被代理类没有接口，还得用cglib
 	 */
 	boolean proxyTargetClass() default false;
 

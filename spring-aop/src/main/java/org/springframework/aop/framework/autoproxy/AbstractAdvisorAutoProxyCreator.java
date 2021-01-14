@@ -125,9 +125,9 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
 
 
-
-
-
+		/**
+		 * 针对是@Aspect注解的，添加一个默认切面，用来传递参数
+		 */
 		extendAdvisors(eligibleAdvisors);
 
 
