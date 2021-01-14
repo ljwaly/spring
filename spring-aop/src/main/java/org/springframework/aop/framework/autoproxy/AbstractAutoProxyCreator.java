@@ -365,7 +365,8 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		 *
 		 * 创建当前bean的代理，如果这个bean有advisor的话
 		 * 判断当前实例化的bean有没有切面
-		 * 
+		 *
+		 * 这里拿到的是Advisor切面
 		 */
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 
