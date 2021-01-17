@@ -208,6 +208,10 @@ final class PostProcessorRegistrationDelegate {
 	public static void registerBeanPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, AbstractApplicationContext applicationContext) {
 
+		/**
+		 * 会获取BeanPostProcessor接口实现类的对象
+		 * 进行初始化
+		 */
 		String[] postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor.class, true, false);
 
 		// Register BeanPostProcessorChecker that logs an info message when
@@ -216,6 +220,9 @@ final class PostProcessorRegistrationDelegate {
 		int beanProcessorTargetCount = beanFactory.getBeanPostProcessorCount() + 1 + postProcessorNames.length;
 		beanFactory.addBeanPostProcessor(new BeanPostProcessorChecker(beanFactory, beanProcessorTargetCount));
 
+
+
+
 		// Separate between BeanPostProcessors that implement PriorityOrdered,
 		// Ordered, and the rest.
 		List<BeanPostProcessor> priorityOrderedPostProcessors = new ArrayList<>();
@@ -223,7 +230,15 @@ final class PostProcessorRegistrationDelegate {
 		List<String> orderedPostProcessorNames = new ArrayList<>();
 		List<String> nonOrderedPostProcessorNames = new ArrayList<>();
 
-		//提前实例化BeanPostProcessor类里的bean，然后把bean进行排序
+		/**
+		 * 实现PriorityOrdered接口的
+		 *
+		 *
+		 * 提前实例化BeanPostProcessor类里的bean，
+		 * 然后把bean进行排序
+		 *
+		 *
+		 */
 		for (String ppName : postProcessorNames) {
 			if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
 				//getBean是进行了类的实例化
@@ -246,10 +261,34 @@ final class PostProcessorRegistrationDelegate {
 		// First, register the BeanPostProcessors that implement PriorityOrdered.
 		sortPostProcessors(priorityOrderedPostProcessors, beanFactory);
 
-		//注册到BeanFactory中
+		/**
+		 * 实现PriorityOrdered接口的
+		 *
+		 * 注册到BeanFactory中
+		 *
+		 * 这里说明一点：
+		 *  如果是同级别排序类型的接口实现类，在一起实例化过程中，
+		 *  尽管有前后顺序，但是并没有把对象放入beanFactory，
+		 *  所以这个BeanPostProcessor的实现类，在同批次执行过程中，前后的实现类，并不会相互影响
+		 */
 		registerBeanPostProcessors(beanFactory, priorityOrderedPostProcessors);
 
-		// Next, register the BeanPostProcessors that implement Ordered.
+
+
+
+
+		/**
+		 * Next, register the BeanPostProcessors that implement Ordered.
+		 *
+		 * 实现Ordered接口的
+		 *
+		 *
+		 * 提前实例化BeanPostProcessor类里的bean，
+		 * 然后把bean进行排序
+		 *
+		 * 实例化过程中，并不会放入bean工厂，知道全部完成实例化，才会放入工厂
+		 *
+		 */
 		List<BeanPostProcessor> orderedPostProcessors = new ArrayList<>(orderedPostProcessorNames.size());
 		for (String ppName : orderedPostProcessorNames) {
 			BeanPostProcessor pp = beanFactory.getBean(ppName, BeanPostProcessor.class);
@@ -258,7 +297,12 @@ final class PostProcessorRegistrationDelegate {
 				internalPostProcessors.add(pp);
 			}
 		}
+
+
 		sortPostProcessors(orderedPostProcessors, beanFactory);
+		/**
+		 * 放入工厂
+		 */
 		registerBeanPostProcessors(beanFactory, orderedPostProcessors);
 
 		// Now, register all regular BeanPostProcessors.

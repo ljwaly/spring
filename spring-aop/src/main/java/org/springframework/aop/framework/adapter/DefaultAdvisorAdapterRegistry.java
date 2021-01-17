@@ -63,7 +63,14 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 		}
 		Advice advice = (Advice) adviceObject;
 		if (advice instanceof MethodInterceptor) {
+
 			// So well-known it doesn't even need an adapter.
+			/**
+			 * 可以直接填加全局的自定义切面-3
+			 *
+			 * 此事自定的切面类必须实现MethodInterceptor
+			 *
+			 */
 			return new DefaultPointcutAdvisor(advice);
 		}
 		for (AdvisorAdapter adapter : this.adapters) {

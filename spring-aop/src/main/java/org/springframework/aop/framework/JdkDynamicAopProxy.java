@@ -120,6 +120,12 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 		}
 		Class<?>[] proxiedInterfaces = AopProxyUtils.completeProxiedInterfaces(this.advised, true);
 		findDefinedEqualsAndHashCodeMethods(proxiedInterfaces);
+
+		/**
+		 * 创建jdk动态代理
+		 *
+		 * this对象（JDK代理对象）都是new出来的
+		 */
 		return Proxy.newProxyInstance(classLoader, proxiedInterfaces, this);
 	}
 
@@ -157,14 +163,34 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 		Object oldProxy = null;
 		boolean setProxyContext = false;
 
+		/**
+		 * 从代理工厂拿到被代理对象
+		 *
+		 * this是proxy代理对象
+		 *
+		 * 内部成员变量AdvisedSupport就是proxyFactory
+		 *
+		 *
+		 * AdvisedSupport对象advised就是代理工厂
+		 * 通过这个直接拿到targetSource对象
+		 * 这里可以拿到被代理对象
+		 *
+		 *
+		 */
 		TargetSource targetSource = this.advised.targetSource;
 		Object target = null;
 
 		try {
+
+			/**
+			 * 被代理对象的equals方法和hashCode方法是不能被代理的，不会走切面
+			 */
 			if (!this.equalsDefined && AopUtils.isEqualsMethod(method)) {
 				// The target does not implement the equals(Object) method itself.
 				return equals(args[0]);
 			}
+
+
 			else if (!this.hashCodeDefined && AopUtils.isHashCodeMethod(method)) {
 				// The target does not implement the hashCode() method itself.
 				return hashCode();
@@ -181,22 +207,56 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 
 			Object retVal;
 
+
+
+			/**
+			 * 如果注解@EnableAspectJAutoProxy的属性exposeProxy倍设置为true
+			 * 这里就会把对代理对象放入ThreadLocal中，方便直接获取代理对象
+			 *
+			 * 获取方式：在某个类（具有代理类的方法中）： Object bean = AopContext.currentProxy();然后强转对应的类
+			 *
+			 */
 			if (this.advised.exposeProxy) {
 				// Make invocation available if necessary.
 				oldProxy = AopContext.setCurrentProxy(proxy);
 				setProxyContext = true;
 			}
 
+
+
 			// Get as late as possible to minimize the time we "own" the target,
 			// in case it comes from a pool.
+			/**
+			 *
+			 * 这里就是被代理的对象
+			 */
 			target = targetSource.getTarget();
 			Class<?> targetClass = (target != null ? target.getClass() : null);
 
 			// Get the interception chain for this method.
+			/**
+			 *
+			 * 从代理工厂中拿过滤器链，
+			 * Object是一个MethodInteceptor类型的对象
+			 * 其实就是一个advice对象
+			 *
+			 * 判断当前被执行的方法，是否是需要被代理的，增强对象中，并不是每个方法都必须要进行增强
+			 * 有些代理对象类中有普通方法
+			 *
+			 * 得到增强逻辑处理的链路
+			 */
 			List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
+
+
 
 			// Check whether we have any advice. If we don't, we can fallback on direct
 			// reflective invocation of the target, and avoid creating a MethodInvocation.
+			/**
+			 * 如果改方法没有执行链，
+			 * 则说明该方法是一个普通方法
+			 * 并不需要增强，
+			 * 直接进行反射，完成方法调用
+			 */
 			if (chain.isEmpty()) {
 				// We can skip creating a MethodInvocation: just invoke the target directly
 				// Note that the final invoker must be an InvokerInterceptor so we know it does

@@ -128,6 +128,9 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 			 * 我这边项目中的logging的AOP注解方式的解析
 			 *
 			 * 这里创建Advisor，内部成员变量包含Pointcu和Advice
+			 *
+			 * 内部也有排序-2
+			 * 这里的排序只是@Aspect
 			 */
 			advisors.addAll(this.aspectJAdvisorsBuilder.buildAspectJAdvisors());
 		}

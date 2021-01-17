@@ -145,6 +145,9 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 								 * 创建切面advisor对象
 								 *
 								 * 这个advisorFactory是
+								 *
+								 * 内部也有排序-3
+								 * 这里的排序只是@Aspect
 								 */
 								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
 

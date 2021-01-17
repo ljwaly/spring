@@ -45,7 +45,12 @@ public abstract class AspectJProxyUtils {
 	public static boolean makeAdvisorChainAspectJCapableIfNecessary(List<Advisor> advisors) {
 		// Don't add advisors to an empty list; may indicate that proxying is just not required
 		if (!advisors.isEmpty()) {
+
+			/**
+			 * 寻找有@Aspect注解的标记
+			 */
 			boolean foundAspectJAdvice = false;
+
 			for (Advisor advisor : advisors) {
 				// Be careful not to get the Advice without a guard, as this might eagerly
 				// instantiate a non-singleton AspectJ aspect...
@@ -55,6 +60,16 @@ public abstract class AspectJProxyUtils {
 				}
 			}
 			if (foundAspectJAdvice && !advisors.contains(ExposeInvocationInterceptor.ADVISOR)) {
+
+				/**
+				 * ExposeInvocationInterceptor.ADVISOR
+				 *
+				 * 他的Pointcut和Advice的match方法都是返回true
+				 *
+				 * 他主要是把MethodInvoketion放入ThreadLocal,然后进行火炬传递
+				 * 
+				 *
+				 */
 				advisors.add(0, ExposeInvocationInterceptor.ADVISOR);
 				return true;
 			}
@@ -67,6 +82,14 @@ public abstract class AspectJProxyUtils {
 	 * @param advisor the Advisor to check
 	 */
 	private static boolean isAspectJAdvice(Advisor advisor) {
+
+
+		/**
+		 * 判断当前的切面是不是@Aspect注解的类
+		 *
+		 * 注解@Aspect扫描解析后创建的类就是InstantiationModelAwarePointcutAdvisor对象
+		 *
+		 */
 		return (advisor instanceof InstantiationModelAwarePointcutAdvisor ||
 				advisor.getAdvice() instanceof AbstractAspectJAdvice ||
 				(advisor instanceof PointcutAdvisor &&

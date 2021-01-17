@@ -80,11 +80,15 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 		// in a corresponding `finally` block.
 		Comparator<Method> adviceKindComparator = new ConvertingComparator<>(
 				new InstanceComparator<>(
+
+						// 排序第一等级原则：按照以下注解顺序
 						Around.class, Before.class, After.class, AfterReturning.class, AfterThrowing.class),
 				(Converter<Method, Annotation>) method -> {
 					AspectJAnnotation<?> ann = AbstractAspectJAdvisorFactory.findAspectJAnnotationOnMethod(method);
 					return (ann != null ? ann.getAnnotation() : null);
 				});
+
+		// 排序第二等级原则：按照自然顺序
 		Comparator<Method> methodNameComparator = new ConvertingComparator<>(Method::getName);
 		METHOD_COMPARATOR = adviceKindComparator.thenComparing(methodNameComparator);
 	}
@@ -148,6 +152,10 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 		/**
 		 * 这里循环没有@Pointcut注解的方法
 		 * 就是那种带有切点方法名称的advice方法
+		 *
+		 * 在扫描到的方法进行排序
+		 * 方法getAdvisorMethods（aspectClass）
+		 * 内部也有排序-4
 		 */
 		for (Method method : getAdvisorMethods(aspectClass)) {
 
@@ -207,6 +215,13 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 			}
 		}, ReflectionUtils.USER_DECLARED_METHODS);
 		if (methods.size() > 1) {
+
+			/**
+			 * 把注解按照先后顺序排序
+			 * 排序规则：
+			 * 注解先后顺序  +  自然顺序
+			 * 这里的排序只是@Aspect
+			 */
 			methods.sort(METHOD_COMPARATOR);
 		}
 		return methods;

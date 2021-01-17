@@ -111,6 +111,9 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 		 * 这里有2个实现类
 		 * 先调用实际的子类实现类：AnnotationAwareAspectJAutoProxyCreator
 		 * 子类实现类内部会调用父类的这个方法
+		 *
+		 * 内部也有排序-1
+		 * 这里的排序只是@Aspect
 		 */
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
 
@@ -121,12 +124,17 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 		 * 是一个匹配过程
 		 * 判断候选的切面是否作用在当前的beanClass上面
 		 *
+		 * 判断一个bean是否有合格的切面
+		 *
+		 *
 		 */
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
 
 
 		/**
-		 * 针对是@Aspect注解的，添加一个默认切面，用来传递参数
+		 * 针对是@Aspect注解的，
+		 * 添加一个默认切面，DefaultPointcutAdvisor
+		 * 用来传递参数
 		 */
 		extendAdvisors(eligibleAdvisors);
 
@@ -134,6 +142,13 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 		if (!eligibleAdvisors.isEmpty()) {
 			/**
 			 * 对有@Order@Priority进行排序
+			 * 这里排序会包含自定义的切面（自定义类似@Aspect功能的）
+			 *
+			 * 第一个切面，默认的全局切面
+			 * 第二层级，@order注解
+			 * 第三层级，@Aspect内部的
+			 *
+			 *
 			 */
 			eligibleAdvisors = sortAdvisors(eligibleAdvisors);
 		}

@@ -382,6 +382,10 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			/**
 			 *
 			 * 把被代理对象的实例封装到SingletonTargetSource对象中
+			 *
+			 * 每一个bean对应的代理对象（jdk代理或者Cglib代理）都是新new出来的一个，
+			 * 一一对应
+			 *
 			 */
 			Object proxy = createProxy(
 					bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
@@ -498,10 +502,21 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		ProxyFactory proxyFactory = new ProxyFactory();
 
 		/**
-		 * 把AnnotationAwareAspectJAutoProxyCreator中的某些属性copy到proxyFactory中
+		 * 把AnnotationAwareAspectJAutoProxyCreator中的某些属性
+		 * copy到proxyFactory中
+		 * 主要就是指@EnableAspectJAutoProxy内部的属性值
+		 * proxyTargetClass
+		 * exposeProxy
+		 * 是true或者false
+		 *
 		 */
 		proxyFactory.copyFrom(this);
 
+
+		/**
+		 * 是采用cglib还是采用jdk代理
+		 * 如果没有接口，强制使用cglib代理
+		 */
 		if (!proxyFactory.isProxyTargetClass()) {
 			if (shouldProxyTargetClass(beanClass, beanName)) {//是否是接口，接口要用jdk代理
 				proxyFactory.setProxyTargetClass(true);
@@ -514,12 +529,20 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 		/**
 		 * 组装切面
+		 * 这里会组装全局自定义切面-1
 		 */
 		Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
 
-
+		/**
+		 * 将所有的切面 advisors 加入 proxyFactory
+		 */
 		proxyFactory.addAdvisors(advisors);
+
+		/**
+		 * 把被代理bean的 targetSource 对象添加到  proxyFactory
+		 */
 		proxyFactory.setTargetSource(targetSource);
+
 		customizeProxyFactory(proxyFactory);
 
 		proxyFactory.setFrozen(this.freezeProxy);
@@ -527,6 +550,14 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			proxyFactory.setPreFiltered(true);
 		}
 
+
+
+		/**
+		 * 获取代理对象-1
+		 *
+		 * 每一个bean对应的代理对象都是新new出来的一个，
+		 * 一一对应
+		 */
 		return proxyFactory.getProxy(getProxyClassLoader());
 	}
 
@@ -568,6 +599,12 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 */
 	protected Advisor[] buildAdvisors(@Nullable String beanName, @Nullable Object[] specificInterceptors) {
 		// Handle prototypes correctly...
+		/**
+		 * 设置自定义的MethodInterceptor 和 Advice
+		 *
+		 * 这里会组装全局自定义切面-2
+		 * 如：LjwAopAllAddAdviceBeanPostProcessor添加的MyDefineAopInterceptorDemo切面
+		 */
 		Advisor[] commonInterceptors = resolveInterceptorNames();
 
 		List<Object> allInterceptors = new ArrayList<>();
@@ -609,7 +646,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		 *
 		 * 可以在拿到this这个类，
 		 * 把interceptorNames的属性赋予一些接口对象（类似advisor）
-		 *
+		 * 这里会组装全局自定义切面-3
 		 */
 		for (String beanName : this.interceptorNames) {
 			if (cbf == null || !cbf.isCurrentlyInCreation(beanName)) {
@@ -619,7 +656,13 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 				/**
 				 * wrap
 				 */
-				advisors.add(this.advisorAdapterRegistry.wrap(next));
+				advisors.add(
+						/**
+						 * 这里的next对象是一个
+						 * 可以直接填加全局的自定义切面-3
+						 */
+						this.advisorAdapterRegistry.wrap(next)
+				);
 			}
 		}
 		return advisors.toArray(new Advisor[0]);

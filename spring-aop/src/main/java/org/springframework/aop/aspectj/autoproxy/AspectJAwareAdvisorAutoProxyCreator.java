@@ -70,9 +70,22 @@ public class AspectJAwareAdvisorAutoProxyCreator extends AbstractAdvisorAutoProx
 		List<PartiallyComparableAdvisorHolder> partiallyComparableAdvisors = new ArrayList<>(advisors.size());
 		for (Advisor advisor : advisors) {
 			partiallyComparableAdvisors.add(
+					/**
+					 * 所有的切面都会包装成这个PartiallyComparableAdvisorHolder对象
+					 *
+					 * 封装的时候，会放入一个比较器
+					 *
+					 */
 					new PartiallyComparableAdvisorHolder(advisor, DEFAULT_PRECEDENCE_COMPARATOR));
 		}
+
+		/**
+		 * 最终排序方法
+		 * 
+		 */
 		List<PartiallyComparableAdvisorHolder> sorted = PartialOrder.sort(partiallyComparableAdvisors);
+
+
 		if (sorted != null) {
 			List<Advisor> result = new ArrayList<>(advisors.size());
 			for (PartiallyComparableAdvisorHolder pcAdvisor : sorted) {
