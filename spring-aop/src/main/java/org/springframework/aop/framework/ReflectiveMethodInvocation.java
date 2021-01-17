@@ -158,7 +158,12 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 	@Override
 	@Nullable
 	public Object proceed() throws Throwable {
+
+
 		// We start with an index of -1 and increment early.
+		/**
+		 * 类似一个游标，标记处理到链路的位置第几个
+		 */
 		if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
 			return invokeJoinpoint();
 		}
@@ -172,6 +177,12 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 					(InterceptorAndDynamicMethodMatcher) interceptorOrInterceptionAdvice;
 			Class<?> targetClass = (this.targetClass != null ? this.targetClass : this.method.getDeclaringClass());
 			if (dm.methodMatcher.matches(this.method, targetClass, this.arguments)) {
+
+				/**
+				 * 传入this对象，
+				 * 后面的advice还是会调用process方法
+				 * 继续这个方法递归
+				 */
 				return dm.interceptor.invoke(this);
 			}
 			else {
@@ -183,6 +194,18 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 		else {
 			// It's an interceptor, so we just invoke it: The pointcut will have
 			// been evaluated statically before this object was constructed.
+			/**
+			 *
+			 * 传入this对象，
+			 * 后面的advice还是会调用process方法
+			 * 继续这个方法递归
+			 *
+			 * around的会在invoke方法调用自定义方法，自定义方法内部执行process方法
+			 * before的会在invoke方法中调用process方法
+			 * after在finally代码块执行after方法，在try的代码块，执行process方法
+			 * afterReturn方法先执行process方法得到结果后，会执行调用自定义的afterReturn方法，这个时候可以吧结果带过去
+			 *
+			 */
 			return ((MethodInterceptor) interceptorOrInterceptionAdvice).invoke(this);
 		}
 	}
