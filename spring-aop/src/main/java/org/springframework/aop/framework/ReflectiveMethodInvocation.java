@@ -167,6 +167,12 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 		 * currentInterceptorIndex=-1，起始游标值
 		 */
 		if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
+
+			/**
+			 * 所有的前后置方法处理接入之后
+			 * 这里进入被代理方法进行方法调用
+			 *
+			 */
 			return invokeJoinpoint();
 		}
 

@@ -528,18 +528,26 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
-			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
+
 			/**
+			 * Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
+			 *
 			 * TargetSource接口运用，可以用在改一个类的实现该接口，然后在里面定义实例化对象的方式，
 			 * 然后返回
 			 * 也就是说，不需要spring帮我们实例化接口
 			 *
 			 * 这里可以不看，实际开发用不到。
+			 *
+			 *
+			 * 这里可能会返回一个代理对象,
 			 */
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
+
 			if (bean != null) {
 				return bean;
 			}
+
+
 		}
 		catch (Throwable ex) {
 			throw new BeanCreationException(mbdToUse.getResourceDescription(), beanName,
@@ -553,6 +561,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 * 实例化-5
 			 *
 			 * 核心方法，重要程度5
+			 *
+			 * 涉及bean的方向
+			 * 1.涉及实例bean生成
+			 * 2.涉及注解搜集
+			 * 3.涉及循环依赖
+			 * 4.涉及依赖注入ioc-di
+			 * 5.涉及ioc依赖注入之后的调用，
+			 * 6.涉及aop
+			 *
 			 */
 			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
 
@@ -1306,7 +1323,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
+
+					/**
+					 * 获取一个多例的bean--1
+					 * 多例的
+					 * 代理的
+					 *
+					 */
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
+
 					if (bean != null) {
 						bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
 					}
@@ -1333,6 +1358,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		for (BeanPostProcessor bp : getBeanPostProcessors()) {
 			if (bp instanceof InstantiationAwareBeanPostProcessor) {
 				InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+
+				/**
+				 * 获取一个多例的bean--1
+				 * AbstractAutoProxyCreator的实现
+				 * 多例的
+				 * 代理的
+				 *
+				 */
 				Object result = ibp.postProcessBeforeInstantiation(beanClass, beanName);
 				if (result != null) {
 					return result;

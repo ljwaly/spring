@@ -242,6 +242,14 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 
 	@Override
 	public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) {
+		/**
+		 * 获取一个多例的bean--3
+		 * 多例的
+		 * 代理的
+		 *
+		 */
+
+
 		Object cacheKey = getCacheKey(beanClass, beanName);
 
 		if (!StringUtils.hasLength(beanName) || !this.targetSourcedBeans.contains(beanName)) {
@@ -257,13 +265,37 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		// Create proxy here if we have a custom TargetSource.
 		// Suppresses unnecessary default instantiation of the target bean:
 		// The TargetSource will handle target instances in a custom fashion.
+		/**
+		 * 拿到工程中自定义的targetSource
+		 * 多例的-1
+		 *
+		 */
 		TargetSource targetSource = getCustomTargetSource(beanClass, beanName);
+
+		/**
+		 * 这里需要 targetSource 不为空
+		 */
 		if (targetSource != null) {
 			if (StringUtils.hasLength(beanName)) {
 				this.targetSourcedBeans.add(beanName);
 			}
+
+			/**
+			 * 拿到bean的切面
+			 */
 			Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(beanClass, beanName, targetSource);
+
+			/**
+			 * 这里会利用targetSource创建一个代理对象
+			 *
+			 * 代理的,
+			 * 为了生成JDK或者cglib代理，
+			 * 在进行方法调用的时候，触发invoke方法
+			 * 然后进行targetSource.getTarget(),触发另一个容器的getBean操作
+			 * 拿到getTarget()方法对象本身，继续进行aop
+			 */
 			Object proxy = createProxy(beanClass, beanName, specificInterceptors, targetSource);
+
 			this.proxyTypes.put(cacheKey, proxy.getClass());
 			return proxy;
 		}
@@ -464,7 +496,14 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		// We can't create fancy target sources for directly registered singletons.
 		if (this.customTargetSourceCreators != null &&
 				this.beanFactory != null && this.beanFactory.containsBean(beanName)) {
+
 			for (TargetSourceCreator tsc : this.customTargetSourceCreators) {
+
+				/**
+				 * 拿到工程中自定义的targetSource
+				 * 多例的-2
+				 *
+				 */
 				TargetSource ts = tsc.getTargetSource(beanClass, beanName);
 				if (ts != null) {
 					// Found a matching TargetSource.
@@ -478,6 +517,10 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		}
 
 		// No custom TargetSource found.
+		/**
+		 * 如果找不到targetSource
+		 * 那么说明这个类无法创建 提前创建的代理类
+		 */
 		return null;
 	}
 
