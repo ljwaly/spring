@@ -77,6 +77,10 @@ class ComponentScanAnnotationParser {
 
 		/**
 		 * new 出来扫描器
+		 *
+		 * 设置默认的需要扫描的注解-1
+		 * 一般默认@Compontent
+		 *
 		 */
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(this.registry,
 				componentScan.getBoolean("useDefaultFilters"), this.environment, this.resourceLoader);

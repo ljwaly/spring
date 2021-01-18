@@ -163,7 +163,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		this.registry = registry;
 
 		/**
-		 * 设置默认的需要扫描的注解
+		 * 设置默认的需要扫描的注解-2
 		 * 一般默认@Compontent
 		 *
 		 */

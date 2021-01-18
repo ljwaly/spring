@@ -205,7 +205,9 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	protected void registerDefaultFilters() {
 
 		/**
-		 * 设定默认注解@Component
+		 * 设置默认的需要扫描的注解-3
+		 * 一般默认@Compontent
+		 *
 		 */
 		this.includeFilters.add(new AnnotationTypeFilter(Component.class));
 

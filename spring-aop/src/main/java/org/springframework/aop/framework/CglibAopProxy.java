@@ -746,6 +746,9 @@ class CglibAopProxy implements AopProxy, Serializable {
 		@Nullable
 		public Object proceed() throws Throwable {
 			try {
+				/**
+				 * 从这里开始执行代理切面链路
+				 */
 				return super.proceed();
 			}
 			catch (RuntimeException ex) {

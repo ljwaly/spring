@@ -62,7 +62,10 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 		Advisor[] advisors = config.getAdvisors();
 
 
-
+		/**
+		 * 这里返回的不一定是切面，
+		 * 是各种增强，是一个object对象
+		 */
 		List<Object> interceptorList = new ArrayList<>(advisors.length);
 		Class<?> actualClass = (targetClass != null ? targetClass : method.getDeclaringClass());
 		Boolean hasIntroductions = null;

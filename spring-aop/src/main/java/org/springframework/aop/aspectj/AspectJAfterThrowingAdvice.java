@@ -63,8 +63,21 @@ public class AspectJAfterThrowingAdvice extends AbstractAspectJAdvice
 		}
 		catch (Throwable ex) {
 			if (shouldInvokeOnThrowing(ex)) {
+				/**
+				 * 如果在执行过程中有异常抛出，
+				 * 那么在这里执行@AfterThrowring注解方法，
+				 * 完成链式调用
+				 *
+				 */
 				invokeAdviceMethod(getJoinPointMatch(), null, ex);
 			}
+
+			/**
+			 * 即使已经发现有异常跑出，
+			 * 注解@AfterThrowing并不进行捕获，
+			 * 只是记录一下异常，最终还是会跑出
+			 *
+			 */
 			throw ex;
 		}
 	}

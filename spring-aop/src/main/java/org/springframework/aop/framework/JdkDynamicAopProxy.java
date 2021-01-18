@@ -262,6 +262,11 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 				// Note that the final invoker must be an InvokerInterceptor so we know it does
 				// nothing but a reflective operation on the target, and no hot swapping or fancy proxying.
 				Object[] argsToUse = AopProxyUtils.adaptArgumentsIfNecessary(method, args);
+				/**
+				 * 如果是增强链chain是空的，
+				 * 那么就不是增强类型的方法，直接反射调用
+				 *
+				 */
 				retVal = AopUtils.invokeJoinpointUsingReflection(target, method, argsToUse);
 			}
 
@@ -271,7 +276,8 @@ final class JdkDynamicAopProxy implements AopProxy, InvocationHandler, Serializa
 				// We need to create a method invocation...
 				/**
 				 * 创建代理链路对象
-				 *
+				 * 用代理proxy去执行增强逻辑链路
+				 * 调用
 				 */
 				MethodInvocation invocation =
 						new ReflectiveMethodInvocation(proxy, target, method, args, targetClass, chain);

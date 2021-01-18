@@ -163,6 +163,8 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 		// We start with an index of -1 and increment early.
 		/**
 		 * 类似一个游标，标记处理到链路的位置第几个
+		 *
+		 * currentInterceptorIndex=-1，起始游标值
 		 */
 		if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
 			return invokeJoinpoint();
@@ -170,15 +172,32 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 
 		Object interceptorOrInterceptionAdvice =
 				this.interceptorsAndDynamicMethodMatchers.get(++this.currentInterceptorIndex);
+
+
 		if (interceptorOrInterceptionAdvice instanceof InterceptorAndDynamicMethodMatcher) {
+			/**
+			 * 这个是当advice实现了MethodMatcher接口的时候
+			 *     实现isRuntime()方法，返回true的时候，
+			 *     才会创建的一个InterceptorAndDynamicMethodMatcher对象，
+			 *     才会放入增强的链路里面
+			 *
+			 * 这里主要是为了 对比 有参数的 切面方法
+			 */
+
 			// Evaluate dynamic method matcher here: static part will already have
 			// been evaluated and found to match.
 			InterceptorAndDynamicMethodMatcher dm =
 					(InterceptorAndDynamicMethodMatcher) interceptorOrInterceptionAdvice;
 			Class<?> targetClass = (this.targetClass != null ? this.targetClass : this.method.getDeclaringClass());
+
+			/**
+			 * 重写的方法的针对方法，参数的对比匹配
+			 */
 			if (dm.methodMatcher.matches(this.method, targetClass, this.arguments)) {
 
 				/**
+				 *
+				 *
 				 * 传入this对象，
 				 * 后面的advice还是会调用process方法
 				 * 继续这个方法递归
@@ -188,6 +207,11 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 			else {
 				// Dynamic matching failed.
 				// Skip this interceptor and invoke the next in the chain.
+
+				/**
+				 * 如果不匹配，
+				 * 直接进行递归（进行下一个链元素 调用）
+				 */
 				return proceed();
 			}
 		}
