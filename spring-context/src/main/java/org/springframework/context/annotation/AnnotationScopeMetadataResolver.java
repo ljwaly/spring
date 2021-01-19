@@ -79,14 +79,30 @@ public class AnnotationScopeMetadataResolver implements ScopeMetadataResolver {
 		ScopeMetadata metadata = new ScopeMetadata();
 		if (definition instanceof AnnotatedBeanDefinition) {
 			AnnotatedBeanDefinition annDef = (AnnotatedBeanDefinition) definition;
+
+			/**
+			 * 获取ScopeMetadata注解信息
+			 * 注解@Scope-2
+			 */
 			AnnotationAttributes attributes = AnnotationConfigUtils.attributesFor(
-					annDef.getMetadata(), this.scopeAnnotationType);
+					annDef.getMetadata(),
+					// scopeAnnotationType = Scope.class
+					this.scopeAnnotationType);
+
 			if (attributes != null) {
+
+				/**
+				 * 获取ScopeMetadata注解信息
+				 * 注解@Scope-3
+				 */
 				metadata.setScopeName(attributes.getString("value"));
 				ScopedProxyMode proxyMode = attributes.getEnum("proxyMode");
+
 				if (proxyMode == ScopedProxyMode.DEFAULT) {
 					proxyMode = this.defaultProxyMode;
 				}
+
+				//初始化ScopedProxyMode信息
 				metadata.setScopedProxyMode(proxyMode);
 			}
 		}

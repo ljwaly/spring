@@ -83,8 +83,18 @@ public class ScopedProxyFactoryBean extends ProxyConfig
 		this.scopedTargetSource.setTargetBeanName(targetBeanName);
 	}
 
+
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) {
+		/**
+		 *
+		 * 实现了BeanFactoryAware接口
+		 *
+		 * 初始化的时候，会被加载
+		 *
+		 */
+
+
 		if (!(beanFactory instanceof ConfigurableBeanFactory)) {
 			throw new IllegalStateException("Not running in a ConfigurableBeanFactory: " + beanFactory);
 		}
@@ -97,7 +107,15 @@ public class ScopedProxyFactoryBean extends ProxyConfig
 		pf.setTargetSource(this.scopedTargetSource);
 
 		Assert.notNull(this.targetBeanName, "Property 'targetBeanName' is required");
+
+
+		/**
+		 * 使用beanName通过beanFactory拿到bena的类型
+		 *
+		 */
 		Class<?> beanType = beanFactory.getType(this.targetBeanName);
+
+
 		if (beanType == null) {
 			throw new IllegalStateException("Cannot create scoped proxy for bean '" + this.targetBeanName +
 					"': Target type could not be determined at the time of proxy creation.");
@@ -108,12 +126,20 @@ public class ScopedProxyFactoryBean extends ProxyConfig
 
 		// Add an introduction that implements only the methods on ScopedObject.
 		ScopedObject scopedObject = new DefaultScopedObject(cbf, this.scopedTargetSource.getTargetBeanName());
+
+		/**
+		 * 设置切面拦截器
+		 * 
+		 */
 		pf.addAdvice(new DelegatingIntroductionInterceptor(scopedObject));
 
 		// Add the AopInfrastructureBean marker to indicate that the scoped proxy
 		// itself is not subject to auto-proxying! Only its target bean is.
 		pf.addInterface(AopInfrastructureBean.class);
 
+		/**
+		 * 创建代理对象
+		 */
 		this.proxy = pf.getProxy(cbf.getBeanClassLoader());
 	}
 

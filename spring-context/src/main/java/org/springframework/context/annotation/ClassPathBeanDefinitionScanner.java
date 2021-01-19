@@ -294,8 +294,14 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 
 			for (BeanDefinition candidate : candidates) {
 
+				/**
+				 * 获取ScopeMetadata注解信息
+				 * 获取注解@Scope-1
+				 */
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
+
+
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
 				if (candidate instanceof AbstractBeanDefinition) {
 
@@ -308,9 +314,17 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 				}
 
 				if (checkCandidate(beanName, candidate)) {
+
+					/**
+					 * 对一个bean的
+					 * 注解@Scope支持
+					 */
 					BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(candidate, beanName);
+
+
 					definitionHolder =
 							AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
+
 					beanDefinitions.add(definitionHolder);
 
 					//BeanDefinition注册

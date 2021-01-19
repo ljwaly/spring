@@ -108,7 +108,7 @@ public abstract class AbstractBeanFactoryBasedTargetSourceCreator
 
 		/**
 		 * 创建一个全新的BeanFactory,另一个-1
-		 * 并且移除aop的代理实现processor
+		 * 并且移除aop的代理实现processor(AnnotationAwareAspectJAutoProxyCreator)
 		 */
 		DefaultListableBeanFactory internalBeanFactory = getInternalBeanFactoryForBean(beanName);
 
@@ -159,7 +159,7 @@ public abstract class AbstractBeanFactoryBasedTargetSourceCreator
 			if (internalBeanFactory == null) {
 				/**
 				 * 创建一个全新的BeanFactory,另一个-2
-				 * 并且移除aop的代理实现processor
+				 * 并且移除aop的代理实现processor(AnnotationAwareAspectJAutoProxyCreator)
 				 */
 				internalBeanFactory = buildInternalBeanFactory(this.beanFactory);
 
@@ -185,7 +185,7 @@ public abstract class AbstractBeanFactoryBasedTargetSourceCreator
 		// since those are only meant to apply to beans defined in the original factory.
 		/**
 		 * 创建一个全新的BeanFactory,另一个-2
-		 * 并且移除aop的代理实现processor
+		 * 并且移除aop的代理实现processor(AnnotationAwareAspectJAutoProxyCreator)
 		 */
 		internalBeanFactory.getBeanPostProcessors().removeIf(beanPostProcessor ->
 				beanPostProcessor instanceof AopInfrastructureBean);

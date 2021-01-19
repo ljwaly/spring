@@ -497,6 +497,12 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (this.customTargetSourceCreators != null &&
 				this.beanFactory != null && this.beanFactory.containsBean(beanName)) {
 
+			/**
+			 * this.customTargetSourceCreators属性
+			 * 如果自定义里面初始化一个TargetSourceCreator实现类，
+			 * 那么，就可以创建出来一个类似懒加载的代理实例
+			 *
+			 */
 			for (TargetSourceCreator tsc : this.customTargetSourceCreators) {
 
 				/**

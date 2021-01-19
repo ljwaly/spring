@@ -121,6 +121,9 @@ public class DelegatingIntroductionInterceptor extends IntroductionInfoSupport
 			return retVal;
 		}
 
+		/**
+		 * 走到代理链路
+		 */
 		return doProceed(mi);
 	}
 

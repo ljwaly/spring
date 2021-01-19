@@ -62,6 +62,13 @@ public abstract class ScopedProxyUtils {
 
 		// Create a scoped proxy definition for the original bean name,
 		// "hiding" the target bean in an internal target definition.
+		/**
+		 *
+		 * 这里创建了一个新的RootBeanDefinition
+		 * 类型是ScopedProxyFactoryBean.class类型的
+		 *
+		 *
+		 */
 		RootBeanDefinition proxyDefinition = new RootBeanDefinition(ScopedProxyFactoryBean.class);
 		proxyDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, targetBeanName));
 		proxyDefinition.setOriginatingBeanDefinition(targetDefinition);
@@ -85,6 +92,11 @@ public abstract class ScopedProxyUtils {
 		}
 
 		// The target bean should be ignored in favor of the scoped proxy.
+		/**
+		 * 设置AutowireCandidate属性为false
+		 * primary为false
+		 * 保证每次获取，都是获取新的bean
+		 */
 		targetDefinition.setAutowireCandidate(false);
 		targetDefinition.setPrimary(false);
 

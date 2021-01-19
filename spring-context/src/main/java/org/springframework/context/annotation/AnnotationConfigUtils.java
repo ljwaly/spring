@@ -294,12 +294,25 @@ public abstract class AnnotationConfigUtils {
 
 	static BeanDefinitionHolder applyScopedProxyMode(
 			ScopeMetadata metadata, BeanDefinitionHolder definition, BeanDefinitionRegistry registry) {
-
+		/**
+		 * 从metadata中查找Scope注解的信息
+		 *
+		 * ScopedProxyMode
+		 */
 		ScopedProxyMode scopedProxyMode = metadata.getScopedProxyMode();
+
+
 		if (scopedProxyMode.equals(ScopedProxyMode.NO)) {
 			return definition;
 		}
+
+
 		boolean proxyTargetClass = scopedProxyMode.equals(ScopedProxyMode.TARGET_CLASS);
+
+		/**
+		 * 创建BeanDefinitionHolder,
+		 * 并初始化属性AutoProxyUtils.PRESERVE_TARGET_CLASS_ATTRIBUTE = true
+		 */
 		return ScopedProxyCreator.createScopedProxy(definition, registry, proxyTargetClass);
 	}
 
