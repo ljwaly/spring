@@ -18,7 +18,7 @@ package org.springframework.core.testfixture;
 
 import org.apache.commons.logging.Log;
 
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
+//import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 /**
  * Utility methods that allow JUnit tests to assume certain conditions hold
@@ -38,9 +38,9 @@ public abstract class Assume {
 	 * @param log the log to test
 	 * @throws org.opentest4j.TestAbortedException if the assumption fails
 	 */
-	public static void notLogging(Log log) {
-		assumeFalse(log.isTraceEnabled());
-		assumeFalse(log.isDebugEnabled());
-	}
+//	public static void notLogging(Log log) {
+//		assumeFalse(log.isTraceEnabled());
+//		assumeFalse(log.isDebugEnabled());
+//	}
 
 }

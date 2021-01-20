@@ -102,7 +102,7 @@ public class AnnotationAwareAspectJAutoProxyCreator extends AspectJAwareAdvisorA
 		 * 这个是找父类的Advisor
 		 * 即AbstractAdvisorAutoProxyCreator
 		 *
-		 * 这个方法搜索的是自定义的Advisor，
+		 * 这个方法搜索的是自定义的Advisor，(即实现了Advisor的类，一般实现{@link org.springframework.aop.PointcutAdvisor})
 		 * 自己去实现Pointcut
 		 *
 		 * 一般情况下，这个需要对切面比较熟悉
