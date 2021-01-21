@@ -29,51 +29,7 @@ import javax.sql.DataSource;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-/**
- * Proxy for a target JDBC {@link javax.sql.DataSource}, adding awareness of
- * Spring-managed transactions. Similar to a transactional JNDI DataSource
- * as provided by a Java EE server.
- *
- * <p>Data access code that should remain unaware of Spring's data access support
- * can work with this proxy to seamlessly participate in Spring-managed transactions.
- * Note that the transaction manager, for example {@link DataSourceTransactionManager},
- * still needs to work with the underlying DataSource, <i>not</i> with this proxy.
- *
- * <p><b>Make sure that TransactionAwareDataSourceProxy is the outermost DataSource
- * of a chain of DataSource proxies/adapters.</b> TransactionAwareDataSourceProxy
- * can delegate either directly to the target connection pool or to some
- * intermediary proxy/adapter like {@link LazyConnectionDataSourceProxy} or
- * {@link UserCredentialsDataSourceAdapter}.
- *
- * <p>Delegates to {@link DataSourceUtils} for automatically participating in
- * thread-bound transactions, for example managed by {@link DataSourceTransactionManager}.
- * {@code getConnection} calls and {@code close} calls on returned Connections
- * will behave properly within a transaction, i.e. always operate on the transactional
- * Connection. If not within a transaction, normal DataSource behavior applies.
- *
- * <p>This proxy allows data access code to work with the plain JDBC API and still
- * participate in Spring-managed transactions, similar to JDBC code in a Java EE/JTA
- * environment. However, if possible, use Spring's DataSourceUtils, JdbcTemplate or
- * JDBC operation objects to get transaction participation even without a proxy for
- * the target DataSource, avoiding the need to define such a proxy in the first place.
- *
- * <p>As a further effect, using a transaction-aware DataSource will apply remaining
- * transaction timeouts to all created JDBC (Prepared/Callable)Statement. This means
- * that all operations performed through standard JDBC will automatically participate
- * in Spring-managed transaction timeouts.
- *
- * <p><b>NOTE:</b> This DataSource proxy needs to return wrapped Connections (which
- * implement the {@link ConnectionProxy} interface) in order to handle close calls
- * properly. Use {@link Connection#unwrap} to retrieve the native JDBC Connection.
- *
- * @author Juergen Hoeller
- * @since 1.1
- * @see javax.sql.DataSource#getConnection()
- * @see java.sql.Connection#close()
- * @see DataSourceUtils#doGetConnection
- * @see DataSourceUtils#applyTransactionTimeout
- * @see DataSourceUtils#doReleaseConnection
- */
+
 public class TransactionAwareDataSourceProxy extends DelegatingDataSource {
 
 	private boolean reobtainTransactionalConnections = false;

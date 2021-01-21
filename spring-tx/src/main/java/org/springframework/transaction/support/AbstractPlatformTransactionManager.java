@@ -344,7 +344,18 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 		// Use defaults if no transaction definition given.
 		TransactionDefinition def = (definition != null ? definition : TransactionDefinition.withDefaults());
 
+
+		/**
+		 *
+		 * 重点-核心代码-3
+		 *
+		 * 从ThreadLocal中获取连接对象
+		 *
+		 */
 		Object transaction = doGetTransaction();
+
+
+
 		boolean debugEnabled = logger.isDebugEnabled();
 
 		if (isExistingTransaction(transaction)) {

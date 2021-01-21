@@ -50,6 +50,9 @@ public class JtaTransactionAnnotationParser implements TransactionAnnotationPars
 		AnnotationAttributes attributes = AnnotatedElementUtils.getMergedAnnotationAttributes(
 				element, javax.transaction.Transactional.class);
 		if (attributes != null) {
+			/**
+			 * 将注解解析，并封装成对象
+			 */
 			return parseTransactionAnnotation(attributes);
 		}
 		else {

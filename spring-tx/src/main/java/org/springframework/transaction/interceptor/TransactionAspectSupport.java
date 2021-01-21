@@ -331,10 +331,28 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			final InvocationCallback invocation) throws Throwable {
 
 		// If the transaction attribute is null, the method is non-transactional.
+		/**
+		 * 获取事务属性处理器
+		 *
+		 */
 		TransactionAttributeSource tas = getTransactionAttributeSource();
+
+
+		/**
+		 * 获取事务注解的定义属性
+		 */
 		final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
+
 		final TransactionManager tm = determineTransactionManager(txAttr);
 
+
+		/**
+		 * 这里是响应式编程
+		 * 可以忽略
+		 * 暂时先不看
+		 * 5.2.8新增内容
+		 *
+		 */
 		if (this.reactiveAdapterRegistry != null && tm instanceof ReactiveTransactionManager) {
 			ReactiveTransactionSupport txSupport = this.transactionSupportCache.computeIfAbsent(method, key -> {
 				if (KotlinDetector.isKotlinType(method.getDeclaringClass()) && KotlinDelegate.isSuspend(method)) {
@@ -353,27 +371,58 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 					method, targetClass, invocation, txAttr, (ReactiveTransactionManager) tm);
 		}
 
+
+
+
+
 		PlatformTransactionManager ptm = asPlatformTransactionManager(tm);
+
+		//获取joinpooint
 		final String joinpointIdentification = methodIdentification(method, targetClass, txAttr);
 
+
+		/**
+		 * 注解事务会走这里
+		 */
 		if (txAttr == null || !(ptm instanceof CallbackPreferringPlatformTransactionManager)) {
 			// Standard transaction demarcation with getTransaction and commit/rollback calls.
+			/**
+			 * 开启事务
+			 * 重点-核心代码-1
+			 *
+			 */
 			TransactionInfo txInfo = createTransactionIfNecessary(ptm, txAttr, joinpointIdentification);
 
 			Object retVal;
 			try {
-				// This is an around advice: Invoke the next interceptor in the chain.
-				// This will normally result in a target object being invoked.
+
+				/**
+				 * 火炬传递
+				 * This is an around advice: Invoke the next interceptor in the chain.
+				 * This will normally result in a target object being invoked.
+				 *
+				 *
+				 */
 				retVal = invocation.proceedWithInvocation();
+
+
 			}
+
 			catch (Throwable ex) {
-				// target invocation exception
+
+				/**
+				 * 事务回滚
+				 * target invocation exception
+				 */
 				completeTransactionAfterThrowing(txInfo, ex);
 				throw ex;
 			}
 			finally {
 				cleanupTransactionInfo(txInfo);
 			}
+
+
+
 
 			if (retVal != null && vavrPresent && VavrDelegate.isVavrTry(retVal)) {
 				// Set rollback-only in case of Vavr failure matching our rollback rules...
@@ -479,7 +528,12 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			if (defaultTransactionManager == null) {
 				defaultTransactionManager = this.transactionManagerCache.get(DEFAULT_TRANSACTION_MANAGER_KEY);
 				if (defaultTransactionManager == null) {
+
+					/**
+					 * 从spring容器中获取事务管理器
+					 */
 					defaultTransactionManager = this.beanFactory.getBean(TransactionManager.class);
+
 					this.transactionManagerCache.putIfAbsent(
 							DEFAULT_TRANSACTION_MANAGER_KEY, defaultTransactionManager);
 				}
@@ -571,6 +625,12 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		TransactionStatus status = null;
 		if (txAttr != null) {
 			if (tm != null) {
+
+				/**
+				 *
+				 * 重点-核心代码-2
+				 *
+				 */
 				status = tm.getTransaction(txAttr);
 			}
 			else {
