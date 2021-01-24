@@ -661,9 +661,17 @@ class CglibAopProxy implements AopProxy, Serializable {
 		@Override
 		@Nullable
 		public Object intercept(Object proxy, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
+			/**
+			 * Cglib动态代理走这里
+			 *
+			 *
+			 */
 			Object oldProxy = null;
 			boolean setProxyContext = false;
 			Object target = null;
+
+
+			//拿到被代理对象的封装的targetSource
 			TargetSource targetSource = this.advised.getTargetSource();
 			try {
 				if (this.advised.exposeProxy) {
@@ -671,25 +679,53 @@ class CglibAopProxy implements AopProxy, Serializable {
 					oldProxy = AopContext.setCurrentProxy(proxy);
 					setProxyContext = true;
 				}
-				// Get as late as possible to minimize the time we "own" the target, in case it comes from a pool...
+
+				/**
+				 * 获取切面的targetSource加载对象
+				 * Get as late as possible to minimize the time we "own" the target, in case it comes from a pool...
+				 *
+				 */
 				target = targetSource.getTarget();
 				Class<?> targetClass = (target != null ? target.getClass() : null);
+
+				/**
+				 * 获取切面的调用链路
+				 *
+				 */
 				List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
 				Object retVal;
-				// Check whether we only have one InvokerInterceptor: that is,
-				// no real advice, but just reflective invocation of the target.
+
+				/**
+				 *
+				 * 检查是否有有效的调用链路，如果为空，则直接走反射执行方法
+				 *
+				 * Check whether we only have one InvokerInterceptor: that is,
+				 * no real advice, but just reflective invocation of the target.
+				 *
+				 */
 				if (chain.isEmpty() && Modifier.isPublic(method.getModifiers())) {
 					// We can skip creating a MethodInvocation: just invoke the target directly.
 					// Note that the final invoker must be an InvokerInterceptor, so we know
 					// it does nothing but a reflective operation on the target, and no hot
 					// swapping or fancy proxying.
+					/**
+					 * 无有效调用链的，直接反射执行方法
+					 */
 					Object[] argsToUse = AopProxyUtils.adaptArgumentsIfNecessary(method, args);
 					retVal = methodProxy.invoke(target, argsToUse);
 				}
 				else {
 					// We need to create a method invocation...
-					retVal = new CglibMethodInvocation(proxy, target, method, args, targetClass, chain, methodProxy).proceed();
+					/**
+					 * 创建链式调用对象，
+					 * 并进行链式调用
+					 */
+					retVal = new CglibMethodInvocation(proxy, target, method, args, targetClass, chain, methodProxy)
+							//链式调用
+							.proceed();
 				}
+
+
 				retVal = processReturnType(proxy, target, method, retVal);
 				return retVal;
 			}

@@ -349,6 +349,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 		 *
 		 * 重点-核心代码-3
 		 *
+		 * 数据库事务对象 DataSourceTranscationObject拿到对象
 		 * 从ThreadLocal中获取连接对象
 		 *
 		 */

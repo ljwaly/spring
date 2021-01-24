@@ -51,14 +51,27 @@ public abstract class JdbcTransactionObjectSupport implements SavepointManager, 
 	private static final Log logger = LogFactory.getLog(JdbcTransactionObjectSupport.class);
 
 
+	/**
+	 * 数据库链接对象的封装类
+	 */
 	@Nullable
 	private ConnectionHolder connectionHolder;
 
+	/**
+	 * 数据库隔离级别
+	 */
 	@Nullable
 	private Integer previousIsolationLevel;
 
+	/**
+	 * 数据库是否只读
+	 */
 	private boolean readOnly = false;
 
+	/**
+	 * 数据库是否允许按照回滚点，进行回滚
+	 * 是否允许创建回滚点
+	 */
 	private boolean savepointAllowed = false;
 
 

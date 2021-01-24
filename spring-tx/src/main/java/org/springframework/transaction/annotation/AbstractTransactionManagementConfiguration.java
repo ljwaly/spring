@@ -62,6 +62,7 @@ public abstract class AbstractTransactionManagementConfiguration implements Impo
 		 */
 		this.enableTx = AnnotationAttributes.fromMap(
 				importMetadata.getAnnotationAttributes(EnableTransactionManagement.class.getName(), false));
+
 		if (this.enableTx == null) {
 			throw new IllegalArgumentException(
 					"@EnableTransactionManagement is not present on importing class " + importMetadata.getClassName());
@@ -70,6 +71,11 @@ public abstract class AbstractTransactionManagementConfiguration implements Impo
 
 	@Autowired(required = false)
 	void setConfigurers(Collection<TransactionManagementConfigurer> configurers) {
+		/**
+		 * 事务管理器初始化
+		 *
+		 */
+
 		if (CollectionUtils.isEmpty(configurers)) {
 			return;
 		}

@@ -110,6 +110,10 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 	 * @since 5.0
 	 */
 	protected DataSource obtainDataSource() {
+		/**
+		 * 注解@Bean的时候，创建的
+		 *
+		 */
 		DataSource dataSource = getDataSource();
 		Assert.state(dataSource != null, "No DataSource set");
 		return dataSource;
@@ -162,13 +166,35 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 
 	@Override
 	protected Object doGetTransaction() {
-		DataSourceTransactionObject txObject = new DataSourceTransactionObject();
-		txObject.setSavepointAllowed(isNestedTransactionAllowed());
+
 		/**
-		 * 这里是从ThreadLocal中获取连接对象
+		 * 创建数据库事务对象
+		 *
+		 * 封装有数据库链接
+		 * 是否只读
+		 * 隔离级别
+		 * 是否允许创建回滚点
+		 *
+		 */
+		DataSourceTransactionObject txObject = new DataSourceTransactionObject();
+
+		/**
+		 * 默认设置为true的
+		 */
+		txObject.setSavepointAllowed(isNestedTransactionAllowed());
+
+
+		/**
+		 * 这里是从ThreadLocal中获取连接对象conn
+		 *
 		 */
 		ConnectionHolder conHolder =
-				(ConnectionHolder) TransactionSynchronizationManager.getResource(obtainDataSource());
+				(ConnectionHolder) TransactionSynchronizationManager.getResource(
+						//获取数据源对象，创建DataSourceTransactionManager时候，设置进去的
+						obtainDataSource()
+				);
+
+
 		txObject.setConnectionHolder(conHolder, false);
 		return txObject;
 	}

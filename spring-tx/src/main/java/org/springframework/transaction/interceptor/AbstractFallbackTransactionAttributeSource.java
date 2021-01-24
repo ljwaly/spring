@@ -95,6 +95,9 @@ public abstract class AbstractFallbackTransactionAttributeSource implements Tran
 		}
 
 		// First, see if we have a cached value.
+		/**
+		 * 方法和目标类形成一个缓存
+		 */
 		Object cacheKey = getCacheKey(method, targetClass);
 		TransactionAttribute cached = this.attributeCache.get(cacheKey);
 		if (cached != null) {
@@ -107,10 +110,16 @@ public abstract class AbstractFallbackTransactionAttributeSource implements Tran
 				return cached;
 			}
 		}
+
+
+
 		else {
 			// We need to work it out.
 			/**
 			 * 事务注解有效性判断
+			 *
+			 * 是否有@Transactional注解
+			 *
 			 */
 			TransactionAttribute txAttr = computeTransactionAttribute(method, targetClass);
 
@@ -158,7 +167,7 @@ public abstract class AbstractFallbackTransactionAttributeSource implements Tran
 		// Don't allow no-public methods as required.
 
 		/**
-		 * 如果是非public方法，直接返回null
+		 * 如果是非public方法（比如private等），直接返回null
 		 * 事务注解无效
 		 */
 		if (allowPublicMethodsOnly() && !Modifier.isPublic(method.getModifiers())) {
@@ -185,6 +194,8 @@ public abstract class AbstractFallbackTransactionAttributeSource implements Tran
 		/**
 		 * 如果方法上没有注解
 		 * 那么再去类上找
+		 *
+		 * 这里就解释了为什么不在类的matcher方法进行检查
 		 *
 		 */
 		// Second try is the transaction attribute on the target class.

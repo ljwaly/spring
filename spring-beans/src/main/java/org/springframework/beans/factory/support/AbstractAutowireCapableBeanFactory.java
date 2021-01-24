@@ -2126,7 +2126,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		/**
 		 *
 		 * 顺序：
-		 * @PostConstruct > InitializingBean接口实现的(afterPropertiesSet方法) > xml配置init-method
+		 * 注解@PostConstruct > InitializingBean接口实现的(afterPropertiesSet方法) > xml配置init-method
 		 *
 		 */
 

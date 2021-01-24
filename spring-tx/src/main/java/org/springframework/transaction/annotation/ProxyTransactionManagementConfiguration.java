@@ -50,13 +50,14 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 			TransactionAttributeSource transactionAttributeSource, TransactionInterceptor transactionInterceptor) {
 
 		/**
-		 * 创建事务切面
+		 * 创建事务切面advisor
 		 * 内部有Pointcut和advice
 		 */
 		BeanFactoryTransactionAttributeSourceAdvisor advisor = new BeanFactoryTransactionAttributeSourceAdvisor();
 
 		/**
 		 * 切面里面设置处理事务属性对象
+		 * 解析注解@Transaction类
 		 */
 		advisor.setTransactionAttributeSource(transactionAttributeSource);
 
@@ -84,6 +85,10 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public TransactionAttributeSource transactionAttributeSource() {
+		/**
+		 * 创建事务属性解析器
+		 * 放入需要解析注解@Transactional的解析类
+		 */
 		return new AnnotationTransactionAttributeSource();
 	}
 
@@ -91,19 +96,33 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public TransactionInterceptor transactionInterceptor(TransactionAttributeSource transactionAttributeSource) {
 
-		//创建事务切面
+		/**
+		 * 创建事务的增强advice
+		 *
+		 * 内部有链式代用的invoke方法
+		 */
 		TransactionInterceptor interceptor = new TransactionInterceptor();
 
-		//事务属性处理器设置到advice中
+		/**
+		 * 事务属性解析器设置到advice中
+		 */
 		interceptor.setTransactionAttributeSource(transactionAttributeSource);
 
-		//事务属性管理器设置到advice中
+
+		/**
+		 * 事务属性管理器设置到advice中
+		 *
+		 * 这里刚开始为空是可能的，
+		 * 会在AbstractTransactionManagementConfiguration的setImportMetadata方法中初始化
+		 */
 		if (this.txManager != null) {
 			/**
+			 * txManager
 			 * 父类内部定义的事务管理器
 			 */
 			interceptor.setTransactionManager(this.txManager);
 		}
+
 		return interceptor;
 	}
 

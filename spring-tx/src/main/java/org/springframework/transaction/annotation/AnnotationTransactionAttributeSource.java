@@ -91,6 +91,10 @@ public class AnnotationTransactionAttributeSource extends AbstractFallbackTransa
 	 */
 	public AnnotationTransactionAttributeSource(boolean publicMethodsOnly) {
 		this.publicMethodsOnly = publicMethodsOnly;
+
+
+
+
 		if (jta12Present || ejb3Present) {
 			this.annotationParsers = new LinkedHashSet<>(4);
 			this.annotationParsers.add(new SpringTransactionAnnotationParser());
@@ -101,7 +105,14 @@ public class AnnotationTransactionAttributeSource extends AbstractFallbackTransa
 				this.annotationParsers.add(new Ejb3TransactionAnnotationParser());
 			}
 		}
+
 		else {
+
+			/**
+			 * 一般主要有效的就是@Transactional注解
+			 * SpringTransactionAnnotationParser就是这个类
+			 * 
+			 */
 			this.annotationParsers = Collections.singleton(new SpringTransactionAnnotationParser());
 		}
 	}

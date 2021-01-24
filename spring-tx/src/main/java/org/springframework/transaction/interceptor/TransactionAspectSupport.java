@@ -332,7 +332,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 		// If the transaction attribute is null, the method is non-transactional.
 		/**
-		 * 获取事务属性处理器
+		 * 获取事务属性处理类
 		 *
 		 */
 		TransactionAttributeSource tas = getTransactionAttributeSource();
@@ -340,9 +340,14 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 		/**
 		 * 获取事务注解的定义属性
+		 *
 		 */
 		final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
 
+
+		/**
+		 * 获取事务管理器
+		 */
 		final TransactionManager tm = determineTransactionManager(txAttr);
 
 
@@ -372,17 +377,19 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		}
 
 
-
-
-
+		/**
+		 * 判断事务管理器类型
+		 */
 		PlatformTransactionManager ptm = asPlatformTransactionManager(tm);
 
-		//获取joinpooint
+		//获取joinpooint，主要是方法名称
 		final String joinpointIdentification = methodIdentification(method, targetClass, txAttr);
 
 
 		/**
 		 * 注解事务会走这里
+		 *
+		 * 核心代码 if
 		 */
 		if (txAttr == null || !(ptm instanceof CallbackPreferringPlatformTransactionManager)) {
 			// Standard transaction demarcation with getTransaction and commit/rollback calls.
@@ -398,6 +405,11 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 				/**
 				 * 火炬传递
+				 *
+				 * 在执行这个匿名对象的接口方法的时候，
+				 * 回调匿名对象的lambda表达式
+				 * MethodInvocation.proceed()方法，走gdk代理或者cglib代理的ReflectiveMethodInvocation
+				 *
 				 * This is an around advice: Invoke the next interceptor in the chain.
 				 * This will normally result in a target object being invoked.
 				 *
@@ -432,9 +444,17 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				}
 			}
 
+			/**
+			 * 事务提交
+			 * target invocation exception
+			 */
 			commitTransactionAfterReturning(txInfo);
 			return retVal;
 		}
+
+
+
+
 
 		else {
 			Object result;
@@ -513,6 +533,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 	protected TransactionManager determineTransactionManager(@Nullable TransactionAttribute txAttr) {
 		// Do not attempt to lookup tx manager if no tx attributes are set
 		if (txAttr == null || this.beanFactory == null) {
+
 			return getTransactionManager();
 		}
 
@@ -524,13 +545,24 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			return determineQualifiedTransactionManager(this.beanFactory, this.transactionManagerBeanName);
 		}
 		else {
+			/**
+			 * 从advice中获取事务管理器
+			 *
+			 * 事务管理器有可能为空的
+			 */
 			TransactionManager defaultTransactionManager = getTransactionManager();
+
+
 			if (defaultTransactionManager == null) {
+
+				//从缓存中获取
 				defaultTransactionManager = this.transactionManagerCache.get(DEFAULT_TRANSACTION_MANAGER_KEY);
 				if (defaultTransactionManager == null) {
 
 					/**
 					 * 从spring容器中获取事务管理器
+					 *
+					 * 实现了TransactionManager接口的实例
 					 */
 					defaultTransactionManager = this.beanFactory.getBean(TransactionManager.class);
 
@@ -627,8 +659,10 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			if (tm != null) {
 
 				/**
+				 * 开启事务
 				 *
 				 * 重点-核心代码-2
+				 *
 				 *
 				 */
 				status = tm.getTransaction(txAttr);

@@ -51,7 +51,11 @@ public class SpringTransactionAnnotationParser implements TransactionAnnotationP
 				element, Transactional.class, false, false);
 		if (attributes != null) {
 
-			//在类上是否有@Transactional注解
+			/**
+			 * 在类上是否有@Transactional注解
+			 *
+			 * 把注解的属性取出来，封装成map
+			 */
 			return parseTransactionAnnotation(attributes);
 		}
 		else {

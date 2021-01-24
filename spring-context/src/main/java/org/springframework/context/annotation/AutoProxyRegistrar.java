@@ -74,11 +74,19 @@ public class AutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
 
 					/**
 					 * 生成代理的入口类-1
+					 *
+					 * 注册Aop的入口类InfrastructureAdvisorAutoProxyCreator
+					 *
 					 */
 					AopConfigUtils.registerAutoProxyCreatorIfNecessary(registry);
 
 
 					if ((Boolean) proxyTargetClass) {
+
+						/**
+						 * 把属性设置到入口类找那个，最终会copy到proxyFactory中
+						 * 就是吧proxyTargetClass字段的true或者false设置进proxyFactory
+						 */
 						AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(registry);
 						return;
 					}
