@@ -342,7 +342,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		 * 获取事务注解的定义属性
 		 *
 		 */
-		final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
+ 		final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
 
 
 		/**

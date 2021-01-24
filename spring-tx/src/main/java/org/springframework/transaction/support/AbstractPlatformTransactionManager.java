@@ -548,7 +548,20 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			}
 		}
 		boolean newSynchronization = (getTransactionSynchronization() != SYNCHRONIZATION_NEVER);
-		return prepareTransactionStatus(definition, transaction, false, newSynchronization, debugEnabled, null);
+
+		/**
+		 * 只有当传播属性为REQUIRED时，才会走到这里
+		 *
+		 * newConnection这个属性为false
+		 * 决定是否进行提交
+		 *
+		 *
+		 */
+		return prepareTransactionStatus(
+				definition, //事务属性
+				transaction, //事务对象
+				false, //是否是否提交
+				newSynchronization, debugEnabled, null);
 	}
 
 	/**

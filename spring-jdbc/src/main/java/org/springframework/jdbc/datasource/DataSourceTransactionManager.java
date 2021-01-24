@@ -195,7 +195,13 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 						obtainDataSource()
 				);
 
-		//放入事务对象（第一次为null，标识也放成false）
+		/**
+		 * 放入事务对象（第一次为null，标识也放成false）
+		 *
+		 * 如果不是第一次来拿，肯定可以拿到对象
+		 * 但是此时对象，状态newConnectionHolder会被设定为false（除非新创建的，才会是true）
+		 *
+		 */
 		txObject.setConnectionHolder(conHolder, false);
 		return txObject;
 	}

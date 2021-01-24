@@ -136,6 +136,12 @@ public abstract class TransactionSynchronizationManager {
 	 */
 	@Nullable
 	public static Object getResource(Object key) {
+		/**
+		 * key是数据库链接对象
+		 * 对于配置相同数据源的情况下，基本上是一直的
+		 * 这里只能通过ThreadLocal不同，区分不同的链接对象
+		 * 
+		 */
 		Object actualKey = TransactionSynchronizationUtils.unwrapResourceIfNecessary(key);
 		Object value = doGetResource(actualKey);
 		if (value != null && logger.isTraceEnabled()) {
