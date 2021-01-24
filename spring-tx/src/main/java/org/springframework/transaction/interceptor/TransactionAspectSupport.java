@@ -445,7 +445,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			}
 
 			/**
-			 * 事务提交
+			 * 事务提交-1
 			 * target invocation exception
 			 */
 			commitTransactionAfterReturning(txInfo);
@@ -663,6 +663,9 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				 *
 				 * 重点-核心代码-2
 				 *
+				 * 拿到事务对象，
+				 * 创建事务链接，放入线程Threadlocal
+				 * 设置事务状态
 				 *
 				 */
 				status = tm.getTransaction(txAttr);
@@ -674,6 +677,12 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				}
 			}
 		}
+
+
+		/**
+		 * 创建事务信息对象，记录新老事务信息对象
+		 * ？
+		 */
 		return prepareTransactionInfo(tm, txAttr, joinpointIdentification, status);
 	}
 
@@ -724,6 +733,10 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			if (logger.isTraceEnabled()) {
 				logger.trace("Completing transaction for [" + txInfo.getJoinpointIdentification() + "]");
 			}
+			
+			/**
+			 * 事务提交-2
+			 */
 			txInfo.getTransactionManager().commit(txInfo.getTransactionStatus());
 		}
 	}

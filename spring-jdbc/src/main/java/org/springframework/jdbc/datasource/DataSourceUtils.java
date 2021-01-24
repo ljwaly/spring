@@ -202,12 +202,20 @@ public abstract class DataSourceUtils {
 		}
 
 		// Apply specific isolation level, if any.
+		/**
+		 * 当前隔离对象的链接级别
+		 */
 		Integer previousIsolationLevel = null;
 		if (definition != null && definition.getIsolationLevel() != TransactionDefinition.ISOLATION_DEFAULT) {
+			/**
+			 * 如果配置的隔离级别和默认的隔离级别不一致
+			 * 则设置配置隔离级别为标准
+			 */
 			if (debugEnabled) {
 				logger.debug("Changing isolation level of JDBC Connection [" + con + "] to " +
 						definition.getIsolationLevel());
 			}
+			
 			int currentIsolation = con.getTransactionIsolation();
 			if (currentIsolation != definition.getIsolationLevel()) {
 				previousIsolationLevel = currentIsolation;

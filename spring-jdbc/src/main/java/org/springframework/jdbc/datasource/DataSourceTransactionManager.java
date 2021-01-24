@@ -187,6 +187,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 		/**
 		 * 这里是从ThreadLocal中获取连接对象conn
 		 *
+		 * 第一次进入，拿到的conHolder是一个null
 		 */
 		ConnectionHolder conHolder =
 				(ConnectionHolder) TransactionSynchronizationManager.getResource(
@@ -194,7 +195,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 						obtainDataSource()
 				);
 
-
+		//放入事务对象（第一次为null，标识也放成false）
 		txObject.setConnectionHolder(conHolder, false);
 		return txObject;
 	}
@@ -202,27 +203,50 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 	@Override
 	protected boolean isExistingTransaction(Object transaction) {
 		DataSourceTransactionObject txObject = (DataSourceTransactionObject) transaction;
+		//如果事务对象中有链接且是active的，则说明之前存在事务
 		return (txObject.hasConnectionHolder() && txObject.getConnectionHolder().isTransactionActive());
 	}
 
 	@Override
 	protected void doBegin(Object transaction, TransactionDefinition definition) {
+
+
+		//事务对象
 		DataSourceTransactionObject txObject = (DataSourceTransactionObject) transaction;
 		Connection con = null;
 
 		try {
+
+			/**
+			 * 如果事务对象中没有链接（第一次进入是空）
+			 */
 			if (!txObject.hasConnectionHolder() ||
 					txObject.getConnectionHolder().isSynchronizedWithTransaction()) {
+				/**
+				 * 从事务管理器中拿到datasource对象
+				 * 从datasource对象中拿链接对象、
+				 * 这里可能是AbstractRoutingDataSource的数据源
+				 */
 				Connection newCon = obtainDataSource().getConnection();
 				if (logger.isDebugEnabled()) {
 					logger.debug("Acquired Connection [" + newCon + "] for JDBC transaction");
 				}
+
+				/**
+				 * 将链接对象设置到事务对象中
+				 * 并设置标识为true
+				 */
 				txObject.setConnectionHolder(new ConnectionHolder(newCon), true);
 			}
 
+			// 设置有事务标识
 			txObject.getConnectionHolder().setSynchronizedWithTransaction(true);
 			con = txObject.getConnectionHolder().getConnection();
 
+			/**
+			 * 设置是否只读链接
+			 * 设置事务隔离级别
+			 */
 			Integer previousIsolationLevel = DataSourceUtils.prepareConnectionForTransaction(con, definition);
 			txObject.setPreviousIsolationLevel(previousIsolationLevel);
 			txObject.setReadOnly(definition.isReadOnly());
@@ -230,23 +254,48 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 			// Switch to manual commit if necessary. This is very expensive in some JDBC drivers,
 			// so we don't want to do it unnecessarily (for example if we've explicitly
 			// configured the connection pool to set it already).
+			/**
+			 * 是否自动提交
+			 */
 			if (con.getAutoCommit()) {
 				txObject.setMustRestoreAutoCommit(true);
 				if (logger.isDebugEnabled()) {
 					logger.debug("Switching JDBC Connection [" + con + "] to manual commit");
 				}
+				/**
+				 * 关闭自动提交
+				 * 因为提交要交给spring来做
+				 */
 				con.setAutoCommit(false);
 			}
 
+			/**
+			 * 执行只读事务命令
+			 */
 			prepareTransactionalConnection(con, definition);
+
+			/**
+			 * 把事务状态设置为true
+			 */
 			txObject.getConnectionHolder().setTransactionActive(true);
 
+			/**
+			 * 获取事务超时时间
+			 */
 			int timeout = determineTimeout(definition);
 			if (timeout != TransactionDefinition.TIMEOUT_DEFAULT) {
 				txObject.getConnectionHolder().setTimeoutInSeconds(timeout);
 			}
 
-			// Bind the connection holder to the thread.
+
+			/**
+			 * 判断是否是一个新的事务
+			 * 如果是新的，这建立数据源对象和链接对象的绑定关系，
+			 * 并且把板顶关系的map，放入ThreadLocal
+			 *
+			 * Bind the connection holder to the thread.
+			 *
+			 */
 			if (txObject.isNewConnectionHolder()) {
 				TransactionSynchronizationManager.bindResource(obtainDataSource(), txObject.getConnectionHolder());
 			}
@@ -281,6 +330,11 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 			logger.debug("Committing JDBC transaction on Connection [" + con + "]");
 		}
 		try {
+			/**
+			 * 事务提交-5
+			 *
+			 * 拿到链接对象，进行提交
+			 */
 			con.commit();
 		}
 		catch (SQLException ex) {

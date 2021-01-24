@@ -120,6 +120,7 @@ public class TransactionInterceptor extends TransactionAspectSupport implements 
 		 *
 		 * 链式调用核心代码-1
 		 *
+		 * 完成整个事务切面（业务	）流程
 		 */
 		return invokeWithinTransaction(invocation.getMethod(), targetClass,
 				//火炬传递

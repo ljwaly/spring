@@ -177,13 +177,21 @@ public abstract class TransactionSynchronizationManager {
 	public static void bindResource(Object key, Object value) throws IllegalStateException {
 		Object actualKey = TransactionSynchronizationUtils.unwrapResourceIfNecessary(key);
 		Assert.notNull(value, "Value must not be null");
+
+		/**
+		 * 这个ThreadLocal处理
+		 */
 		Map<Object, Object> map = resources.get();
 		// set ThreadLocal Map if none found
 		if (map == null) {
 			map = new HashMap<>();
 			resources.set(map);
 		}
+
+		//数据源对象和链接对象建立绑定关系
 		Object oldValue = map.put(actualKey, value);
+
+
 		// Transparently suppress a ResourceHolder that was marked as void...
 		if (oldValue instanceof ResourceHolder && ((ResourceHolder) oldValue).isVoid()) {
 			oldValue = null;
