@@ -194,7 +194,9 @@ public abstract class TransactionSynchronizationManager {
 			resources.set(map);
 		}
 
-		//数据源对象和链接对象建立绑定关系
+		/**
+		 * 数据源对象和链接对象建立绑定关系
+		 */
 		Object oldValue = map.put(actualKey, value);
 
 
@@ -221,6 +223,11 @@ public abstract class TransactionSynchronizationManager {
 	 */
 	public static Object unbindResource(Object key) throws IllegalStateException {
 		Object actualKey = TransactionSynchronizationUtils.unwrapResourceIfNecessary(key);
+		/**
+		 * 解除绑定，并移除ThreadLocal
+		 *
+		 * 拿到老的链接对象value
+		 */
 		Object value = doUnbindResource(actualKey);
 		if (value == null) {
 			throw new IllegalStateException(

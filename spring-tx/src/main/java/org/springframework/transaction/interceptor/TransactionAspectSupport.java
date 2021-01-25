@@ -446,6 +446,9 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 			/**
 			 * 事务提交-1
+			 *
+			 * 事务提交会涉及到挂起链接对象的重置
+			 *
 			 * target invocation exception
 			 */
 			commitTransactionAfterReturning(txInfo);
@@ -755,6 +758,13 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			}
 			if (txInfo.transactionAttribute != null && txInfo.transactionAttribute.rollbackOn(ex)) {
 				try {
+					/**
+					 * 如果传播属性是默认的，
+					 * 那么内层方法异常之后，
+					 * 到这里，会设置同一个链接对象的全局回滚变量是true，
+					 * 即使程序员内部写了try{} catch,也会造成最外层的全局回滚
+					 *
+					 */
 					txInfo.getTransactionManager().rollback(txInfo.getTransactionStatus());
 				}
 				catch (TransactionSystemException ex2) {

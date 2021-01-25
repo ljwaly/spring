@@ -63,6 +63,7 @@ public abstract class ResourceHolderSupport implements ResourceHolder {
 
 	/**
 	 * Mark the resource transaction as rollback-only.
+	 * 激活全局回滚变量状态为true
 	 */
 	public void setRollbackOnly() {
 		this.rollbackOnly = true;

@@ -303,6 +303,9 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 			 *
 			 */
 			if (txObject.isNewConnectionHolder()) {
+				/**
+				 * 建立绑定关系
+				 */
 				TransactionSynchronizationManager.bindResource(obtainDataSource(), txObject.getConnectionHolder());
 			}
 		}
@@ -316,15 +319,29 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 		}
 	}
 
+	/**
+	 *
+	 * 挂起老的对象处理方式
+	 *
+	 */
 	@Override
 	protected Object doSuspend(Object transaction) {
 		DataSourceTransactionObject txObject = (DataSourceTransactionObject) transaction;
+		/**
+		 * 把链接对象设置为空
+		 */
 		txObject.setConnectionHolder(null);
+		/**
+		 * 并解除绑定关系
+		 */
 		return TransactionSynchronizationManager.unbindResource(obtainDataSource());
 	}
 
 	@Override
 	protected void doResume(@Nullable Object transaction, Object suspendedResources) {
+		/**
+		 * 对事务进行绑定
+		 */
 		TransactionSynchronizationManager.bindResource(obtainDataSource(), suspendedResources);
 	}
 
@@ -370,6 +387,14 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 			logger.debug("Setting JDBC transaction [" + txObject.getConnectionHolder().getConnection() +
 					"] rollback-only");
 		}
+
+		/**
+		 * 如果传播属性是默认的，
+		 * 那么内层方法异常之后，
+		 * 到这里，会设置同一个链接对象的全局回滚变量是true，
+		 * 即使程序员内部写了try{} catch,也会造成最外层的全局回滚
+		 *
+		 */
 		txObject.setRollbackOnly();
 	}
 
@@ -459,6 +484,13 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 		}
 
 		public void setRollbackOnly() {
+			/**
+			 * 如果传播属性是默认的，
+			 * 那么内层方法异常之后，
+			 * 到这里，会设置同一个链接对象的全局回滚变量是true，
+			 * 即使程序员内部写了try{} catch,也会造成最外层的全局回滚
+			 *
+			 */
 			getConnectionHolder().setRollbackOnly();
 		}
 
