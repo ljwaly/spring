@@ -249,6 +249,9 @@ public abstract class DataSourceUtils {
 					logger.debug("Resetting isolation level of JDBC Connection [" +
 							con + "] to " + previousIsolationLevel);
 				}
+				/**
+				 * 恢复隔离级别
+				 */
 				con.setTransactionIsolation(previousIsolationLevel);
 			}
 
@@ -257,6 +260,9 @@ public abstract class DataSourceUtils {
 				if (debugEnabled) {
 					logger.debug("Resetting read-only flag of JDBC Connection [" + con + "]");
 				}
+				/**
+				 * 恢复只读与否设置
+				 */
 				con.setReadOnly(false);
 			}
 		}
@@ -363,6 +369,11 @@ public abstract class DataSourceUtils {
 	 */
 	public static void releaseConnection(@Nullable Connection con, @Nullable DataSource dataSource) {
 		try {
+
+			/**
+			 * 释放连接
+			 * 关闭连接
+			 */
 			doReleaseConnection(con, dataSource);
 		}
 		catch (SQLException ex) {
@@ -396,6 +407,10 @@ public abstract class DataSourceUtils {
 				return;
 			}
 		}
+		/**
+		 * 释放连接
+		 * 关闭连接
+		 */
 		doCloseConnection(con, dataSource);
 	}
 
@@ -409,6 +424,14 @@ public abstract class DataSourceUtils {
 	 */
 	public static void doCloseConnection(Connection con, @Nullable DataSource dataSource) throws SQLException {
 		if (!(dataSource instanceof SmartDataSource) || ((SmartDataSource) dataSource).shouldClose(con)) {
+			/**
+			 * 释放连接
+			 * 关闭连接
+			 * 这个连接对象是数据库创建的代理连接对象
+			 * 将数据库连接释放到数据库连接池里面
+			 *
+			 * 并不是真正的关闭
+			 */
 			con.close();
 		}
 	}

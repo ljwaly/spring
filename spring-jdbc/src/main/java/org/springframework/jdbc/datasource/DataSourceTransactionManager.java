@@ -264,7 +264,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 			 * 是否自动提交
 			 */
 			if (con.getAutoCommit()) {
-				txObject.setMustRestoreAutoCommit(true);
+				txObject.setMustRestoreAutoCommit(true);//备份自动提交属性
 				if (logger.isDebugEnabled()) {
 					logger.debug("Switching JDBC Connection [" + con + "] to manual commit");
 				}
@@ -404,6 +404,9 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 
 		// Remove the connection holder from the thread, if exposed.
 		if (txObject.isNewConnectionHolder()) {
+			/**
+			 * 在这里会将当前提交的事物对象进行解绑
+			 */
 			TransactionSynchronizationManager.unbindResource(obtainDataSource());
 		}
 
@@ -411,8 +414,16 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 		Connection con = txObject.getConnectionHolder().getConnection();
 		try {
 			if (txObject.isMustRestoreAutoCommit()) {
+				/**
+				 * 并回复数据库的自动提交设定
+				 */
 				con.setAutoCommit(true);
 			}
+			/**
+			 *
+			 * 对数据库状态进行恢复
+			 * （创建事物对象的时候，做的变更全部恢复）
+			 */
 			DataSourceUtils.resetConnectionAfterTransaction(
 					con, txObject.getPreviousIsolationLevel(), txObject.isReadOnly());
 		}
@@ -424,6 +435,11 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 			if (logger.isDebugEnabled()) {
 				logger.debug("Releasing JDBC Connection [" + con + "] after transaction");
 			}
+			
+			/**
+			 * 释放连接
+			 * 关闭连接
+			 */
 			DataSourceUtils.releaseConnection(con, this.dataSource);
 		}
 
