@@ -1030,7 +1030,15 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 					if (status.isDebug()) {
 						logger.debug("Rolling back transaction to savepoint");
 					}
+					/**
+					 * 如果是嵌套的传播属性
+					 *
+					 * 会有回滚点
+					 *
+					 * 在回滚点回滚的时候，会初始化全局回滚变量为false
+					 */
 					status.rollbackToHeldSavepoint();
+					
 				}
 				else if (status.isNewTransaction()) {
 					if (status.isDebug()) {

@@ -150,6 +150,13 @@ public abstract class AbstractTransactionStatus implements TransactionStatus {
 			throw new TransactionUsageException(
 					"Cannot roll back to savepoint - no savepoint associated with current transaction");
 		}
+		/**
+		 * 如果是嵌套的传播属性
+		 *
+		 * 会有回滚点
+		 *
+		 * 在回滚点回滚的时候，会初始化全局回滚变量为false
+		 */
 		getSavepointManager().rollbackToSavepoint(savepoint);
 		getSavepointManager().releaseSavepoint(savepoint);
 		setSavepoint(null);
@@ -192,6 +199,13 @@ public abstract class AbstractTransactionStatus implements TransactionStatus {
 	 */
 	@Override
 	public void rollbackToSavepoint(Object savepoint) throws TransactionException {
+		/**
+		 * 如果是嵌套的传播属性
+		 *
+		 * 会有回滚点
+		 *
+		 * 在回滚点回滚的时候，会初始化全局回滚变量为false
+		 */
 		getSavepointManager().rollbackToSavepoint(savepoint);
 	}
 
