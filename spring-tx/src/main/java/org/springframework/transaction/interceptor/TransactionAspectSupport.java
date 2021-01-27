@@ -764,8 +764,15 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 					 * 到这里，会设置同一个链接对象的全局回滚变量是true，
 					 * 即使程序员内部写了try{} catch,也会造成最外层的全局回滚
 					 *
+					 *
+					 * 如果是nested的方式的
+					 * 会在这里进行回滚
+					 * 回滚的时候，会设置全局回滚变量为false，取消全局回滚
 					 */
-					txInfo.getTransactionManager().rollback(txInfo.getTransactionStatus());
+					txInfo.getTransactionManager()
+							//回滚会设置全局回滚变量为false
+							.rollback(txInfo.getTransactionStatus());
+
 				}
 				catch (TransactionSystemException ex2) {
 					logger.error("Application exception overridden by rollback exception", ex);

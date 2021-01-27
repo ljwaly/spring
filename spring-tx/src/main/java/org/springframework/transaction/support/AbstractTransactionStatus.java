@@ -137,7 +137,16 @@ public abstract class AbstractTransactionStatus implements TransactionStatus {
 	 * if the underlying transaction does not support savepoints
 	 */
 	public void createAndHoldSavepoint() throws TransactionException {
-		setSavepoint(getSavepointManager().createSavepoint());
+		/**
+		 * 创建回滚点
+		 * 创建回滚点，并初始化放事务状态中
+		 *
+		 */
+		setSavepoint(
+				// 事务对象
+				getSavepointManager()
+				// 创建回滚点
+				.createSavepoint());
 	}
 
 	/**
@@ -151,13 +160,13 @@ public abstract class AbstractTransactionStatus implements TransactionStatus {
 					"Cannot roll back to savepoint - no savepoint associated with current transaction");
 		}
 		/**
-		 * 如果是嵌套的传播属性
-		 *
-		 * 会有回滚点
-		 *
-		 * 在回滚点回滚的时候，会初始化全局回滚变量为false
+		 * 如果是nested的方式的
+		 * 会在这里进行回滚
+		 * 回滚的时候，会设置全局回滚变量为false，取消全局回滚
 		 */
 		getSavepointManager().rollbackToSavepoint(savepoint);
+
+		//释放回滚点
 		getSavepointManager().releaseSavepoint(savepoint);
 		setSavepoint(null);
 	}
@@ -171,6 +180,11 @@ public abstract class AbstractTransactionStatus implements TransactionStatus {
 			throw new TransactionUsageException(
 					"Cannot release savepoint - no savepoint associated with current transaction");
 		}
+		/**
+		 * nested方式的，会在提交的时候，
+		 * 释放回滚点
+		 * 擦掉回滚点
+		 */
 		getSavepointManager().releaseSavepoint(savepoint);
 		setSavepoint(null);
 	}

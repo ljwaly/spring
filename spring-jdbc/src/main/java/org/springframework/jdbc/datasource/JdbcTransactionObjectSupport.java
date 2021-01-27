@@ -160,6 +160,9 @@ public abstract class JdbcTransactionObjectSupport implements SavepointManager, 
 	 */
 	@Override
 	public Object createSavepoint() throws TransactionException {
+		/**
+		 * 拿到链接对象持有者
+		 */
 		ConnectionHolder conHolder = getConnectionHolderForSavepoint();
 		try {
 			if (!conHolder.supportsSavepoints()) {
@@ -170,6 +173,9 @@ public abstract class JdbcTransactionObjectSupport implements SavepointManager, 
 				throw new CannotCreateTransactionException(
 						"Cannot create savepoint for transaction which is already marked as rollback-only");
 			}
+			/**
+			 * 创建回滚点
+			 */
 			return conHolder.createSavepoint();
 		}
 		catch (SQLException ex) {
@@ -187,14 +193,15 @@ public abstract class JdbcTransactionObjectSupport implements SavepointManager, 
 		try {
 			conHolder.getConnection().rollback((Savepoint) savepoint);
 			/**
-			 * 如果是嵌套的传播属性
-			 *
-			 * 会有回滚点
-			 *
-			 * 在回滚点回滚的时候，会初始化全局回滚变量为false
+			 * 如果是nested的方式的
+			 * 会在这里进行回滚
+			 * 回滚的时候，会设置全局回滚变量为false，取消全局回滚
 			 */
 			conHolder.resetRollbackOnly();
+
 		}
+
+
 		catch (Throwable ex) {
 			throw new TransactionSystemException("Could not roll back to JDBC savepoint", ex);
 		}
@@ -208,6 +215,11 @@ public abstract class JdbcTransactionObjectSupport implements SavepointManager, 
 	public void releaseSavepoint(Object savepoint) throws TransactionException {
 		ConnectionHolder conHolder = getConnectionHolderForSavepoint();
 		try {
+			/**
+			 * nested方式的，会在提交的时候，
+			 * 释放回滚点
+			 * 擦掉回滚点
+			 */
 			conHolder.getConnection().releaseSavepoint((Savepoint) savepoint);
 		}
 		catch (Throwable ex) {

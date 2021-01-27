@@ -370,7 +370,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			 *
 			 * 如果不是第一次进来（就是方法嵌套的时候，有链接对象），则会走这个逻辑，
 			 *
-			 *
+			 * nested方式，在这里会进行savePoint设置
 			 */
 			return handleExistingTransaction(def, transaction, debugEnabled);
 		}
@@ -550,6 +550,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 		/**
 		 * 如果设定以事务的PROPAGATION_NESTED，
 		 *
+		 * 这里是创建了回滚点，并设置提交标记为false
 		 */
 		if (definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_NESTED) {
 			if (!isNestedTransactionAllowed()) {
@@ -560,13 +561,30 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			if (debugEnabled) {
 				logger.debug("Creating nested transaction with name [" + definition.getName() + "]");
 			}
+
+
+
+			/**
+			 * 默认是可以嵌套事务的
+			 */
 			if (useSavepointForNestedTransaction()) {
 				// Create savepoint within existing Spring-managed transaction,
 				// through the SavepointManager API implemented by TransactionStatus.
 				// Usually uses JDBC 3.0 savepoints. Never activates Spring synchronization.
+
+				/**
+				 * 这里创建的事务状态，
+				 * newTransaction是false，不能提交事务的状态
+				 */
 				DefaultTransactionStatus status =
 						prepareTransactionStatus(definition, transaction, false, false, debugEnabled, null);
+
+				/**
+				 * 这里创建回滚点
+				 */
 				status.createAndHoldSavepoint();
+
+
 				return status;
 			}
 			else {
@@ -913,6 +931,11 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 						logger.debug("Releasing transaction savepoint");
 					}
 					unexpectedRollback = status.isGlobalRollbackOnly();
+					/**
+					 * nested方式的，会在提交的时候，
+					 * 释放回滚点
+					 * 擦掉回滚点
+					 */
 					status.releaseHeldSavepoint();
 				}
 
@@ -1009,6 +1032,9 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 		 * 到这里，会设置同一个链接对象的全局回滚变量是true，
 		 * 即使程序员内部写了try{} catch,也会造成最外层的全局回滚
 		 *
+		 * 如果是nested的方式的
+		 * 会在这里进行回滚
+		 * 回滚的时候，会设置全局回滚变量为false，取消全局回滚
 		 */
 		processRollback(defStatus, false);
 	}
@@ -1026,6 +1052,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			try {
 				triggerBeforeCompletion(status);
 
+				// 嵌套的nested属性的有回滚点
 				if (status.hasSavepoint()) {
 					if (status.isDebug()) {
 						logger.debug("Rolling back transaction to savepoint");
@@ -1040,12 +1067,17 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 					status.rollbackToHeldSavepoint();
 					
 				}
+
+
 				else if (status.isNewTransaction()) {
 					if (status.isDebug()) {
 						logger.debug("Initiating transaction rollback");
 					}
 					doRollback(status);
+
 				}
+
+
 				else {
 					// Participating in larger transaction
 					if (status.hasTransaction()) {
