@@ -914,8 +914,12 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				prepareForCommit(status);
 
 				/**
+				 * 触发器
+				 *
 				 * 调用beforeCommit方法，
-				 * 事务提交之前做业务处理
+				 * 事务提交之前做业务处理，
+				 * 
+				 * 在事务开始的时候，注册进去触发器，当运行到某些状态，可以触发对应的结果
 				 */
 				triggerBeforeCommit(status);
 				triggerBeforeCompletion(status);
