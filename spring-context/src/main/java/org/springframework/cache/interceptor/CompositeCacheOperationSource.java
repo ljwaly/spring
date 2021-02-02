@@ -71,6 +71,9 @@ public class CompositeCacheOperationSource implements CacheOperationSource, Seri
 	public Collection<CacheOperation> getCacheOperations(Method method, @Nullable Class<?> targetClass) {
 		Collection<CacheOperation> ops = null;
 		for (CacheOperationSource source : this.cacheOperationSources) {
+			/**
+			 * 注解Cache扫描
+			 */
 			Collection<CacheOperation> cacheOperations = source.getCacheOperations(method, targetClass);
 			if (cacheOperations != null) {
 				if (ops == null) {

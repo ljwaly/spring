@@ -66,6 +66,8 @@ public class AutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
 			}
 			Object mode = candidate.get("mode");
 			Object proxyTargetClass = candidate.get("proxyTargetClass");
+
+
 			if (mode != null && proxyTargetClass != null && AdviceMode.class == mode.getClass() &&
 					Boolean.class == proxyTargetClass.getClass()) {
 				candidateFound = true;

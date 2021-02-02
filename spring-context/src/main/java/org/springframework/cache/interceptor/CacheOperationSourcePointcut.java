@@ -45,7 +45,15 @@ abstract class CacheOperationSourcePointcut extends StaticMethodMatcherPointcut 
 	@Override
 	public boolean matches(Method method, Class<?> targetClass) {
 		CacheOperationSource cas = getCacheOperationSource();
-		return (cas != null && !CollectionUtils.isEmpty(cas.getCacheOperations(method, targetClass)));
+		/**
+		 * 注解Cache扫描-1
+		 */
+		return (cas != null && !CollectionUtils.isEmpty(
+				/**
+				 * 注解Cache扫描-2
+				 */
+				cas.getCacheOperations(method, targetClass))
+		);
 	}
 
 	@Override

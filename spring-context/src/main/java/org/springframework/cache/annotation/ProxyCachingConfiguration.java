@@ -39,15 +39,31 @@ import org.springframework.context.annotation.Role;
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 public class ProxyCachingConfiguration extends AbstractCachingConfiguration {
 
+
+	/**
+	 *
+	 * advisor
+	 */
 	@Bean(name = CacheManagementConfigUtils.CACHE_ADVISOR_BEAN_NAME)
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanFactoryCacheOperationSourceAdvisor cacheAdvisor() {
 		BeanFactoryCacheOperationSourceAdvisor advisor = new BeanFactoryCacheOperationSourceAdvisor();
+
+		/**
+		 * 初始化注解解析器
+		 */
 		advisor.setCacheOperationSource(cacheOperationSource());
+
+		/**
+		 * 初始化advice
+		 */
 		advisor.setAdvice(cacheInterceptor());
+
+
 		if (this.enableCaching != null) {
 			advisor.setOrder(this.enableCaching.<Integer>getNumber("order"));
 		}
+
 		return advisor;
 	}
 
@@ -60,7 +76,11 @@ public class ProxyCachingConfiguration extends AbstractCachingConfiguration {
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public CacheInterceptor cacheInterceptor() {
+		/**
+		 * advice
+		 */
 		CacheInterceptor interceptor = new CacheInterceptor();
+
 		interceptor.configure(this.errorHandler, this.keyGenerator, this.cacheResolver, this.cacheManager);
 		interceptor.setCacheOperationSource(cacheOperationSource());
 		return interceptor;

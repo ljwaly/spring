@@ -58,6 +58,9 @@ public class CacheInterceptor extends CacheAspectSupport implements MethodInterc
 		};
 
 		try {
+			/**
+			 * 执行火炬传递-1
+			 */
 			return execute(aopAllianceInvoker, invocation.getThis(), method, invocation.getArguments());
 		}
 		catch (CacheOperationInvoker.ThrowableWrapper th) {

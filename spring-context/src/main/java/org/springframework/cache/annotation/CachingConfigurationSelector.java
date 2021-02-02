@@ -69,6 +69,9 @@ public class CachingConfigurationSelector extends AdviceModeImportSelector<Enabl
 	@Override
 	public String[] selectImports(AdviceMode adviceMode) {
 		switch (adviceMode) {
+			/**
+			 * 默认值PROXY
+			 */
 			case PROXY:
 				return getProxyImports();
 			case ASPECTJ:

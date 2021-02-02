@@ -122,7 +122,14 @@ public class AnnotationCacheOperationSource extends AbstractFallbackCacheOperati
 	@Override
 	@Nullable
 	protected Collection<CacheOperation> findCacheOperations(Method method) {
-		return determineCacheOperations(parser -> parser.parseCacheAnnotations(method));
+		/**
+		 * 注解Cache扫描-5
+		 */
+		return determineCacheOperations(parser ->
+				/**
+				 * 注解Cache扫描-6
+				 */
+				parser.parseCacheAnnotations(method));
 	}
 
 	/**

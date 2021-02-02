@@ -96,6 +96,9 @@ public abstract class AbstractFallbackCacheOperationSource implements CacheOpera
 			return (cached != NULL_CACHING_ATTRIBUTE ? cached : null);
 		}
 		else {
+			/**
+			 * 注解Cache扫描-3
+			 */
 			Collection<CacheOperation> cacheOps = computeCacheOperations(method, targetClass);
 			if (cacheOps != null) {
 				if (logger.isTraceEnabled()) {
@@ -134,6 +137,9 @@ public abstract class AbstractFallbackCacheOperationSource implements CacheOpera
 		Method specificMethod = AopUtils.getMostSpecificMethod(method, targetClass);
 
 		// First try is the method in the target class.
+		/**
+		 * 注解Cache扫描-4
+		 */
 		Collection<CacheOperation> opDef = findCacheOperations(specificMethod);
 		if (opDef != null) {
 			return opDef;
