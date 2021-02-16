@@ -527,8 +527,15 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		long startTime = System.currentTimeMillis();
 
 		try {
+
+			/**
+			 *
+			 * 初始化springmvc容器的Servlet上下文加载-2
+			 */
 			this.webApplicationContext = initWebApplicationContext();
+
 			initFrameworkServlet();
+
 		}
 		catch (ServletException | RuntimeException ex) {
 			logger.error("Context initialization failed", ex);
@@ -558,14 +565,26 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	 * @see #setContextConfigLocation
 	 */
 	protected WebApplicationContext initWebApplicationContext() {
+
+		/**
+		 * 从servlet上下文中获取spring的上下文对象
+		 *
+		 * 就是spring的bean容器
+		 *
+		 */
 		WebApplicationContext rootContext =
 				WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+
+
+		// springmvc上下文
 		WebApplicationContext wac = null;
 
 		if (this.webApplicationContext != null) {
 			// A context instance was injected at construction time -> use it
 			wac = this.webApplicationContext;
 			if (wac instanceof ConfigurableWebApplicationContext) {
+
+				// springmvc上下文
 				ConfigurableWebApplicationContext cwac = (ConfigurableWebApplicationContext) wac;
 				if (!cwac.isActive()) {
 					// The context has not yet been refreshed -> provide services such as
@@ -573,8 +592,17 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 					if (cwac.getParent() == null) {
 						// The context instance was injected without an explicit parent -> set
 						// the root application context (if any; may be null) as the parent
+
+						/**
+						 * springmvc上下文设置父容器，
+						 * 		父容器是spring的bean容器
+						 */
 						cwac.setParent(rootContext);
 					}
+
+					/**
+					 * 启动容器(spring--refresh方法)-1
+					 */
 					configureAndRefreshWebApplicationContext(cwac);
 				}
 			}
@@ -699,6 +727,13 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 
 		postProcessWebApplicationContext(wac);
 		applyInitializers(wac);
+
+
+		/**
+		 * 启动容器(spring--refresh方法)-2
+		 *
+		 * 这里主要是加载Controller
+		 */
 		wac.refresh();
 	}
 
@@ -895,6 +930,11 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	protected final void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 
+		/**
+		 *
+		 * http请求-3
+		 *
+		 */
 		processRequest(request, response);
 	}
 
@@ -1003,6 +1043,12 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		initContextHolders(request, localeContext, requestAttributes);
 
 		try {
+
+			/**
+			 *
+			 * http请求-4
+			 *
+			 */
 			doService(request, response);
 		}
 		catch (ServletException | IOException ex) {

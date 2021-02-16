@@ -212,8 +212,19 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 * @see #handlerMethodsInitialized
 	 */
 	protected void initHandlerMethods() {
-		for (String beanName : getCandidateBeanNames()) {
+		/**
+		 * 启动初始化
+		 * 加载所有的Controller相关的注解
+		 */
+		for (String beanName :
+				// 获取所有的bean，
+				getCandidateBeanNames()) {
+
 			if (!beanName.startsWith(SCOPED_TARGET_NAME_PREFIX)) {
+				// 除去所有的多例的aop的延迟加载类
+				/**
+				 * 进行加载
+				 */
 				processCandidateBean(beanName);
 			}
 		}
@@ -246,6 +257,9 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	protected void processCandidateBean(String beanName) {
 		Class<?> beanType = null;
 		try {
+			/**
+			 *  加载controller
+			 */
 			beanType = obtainApplicationContext().getType(beanName);
 		}
 		catch (Throwable ex) {
@@ -360,11 +374,18 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 */
 	@Override
 	protected HandlerMethod getHandlerInternal(HttpServletRequest request) throws Exception {
+
+		// 从request对象中获取uri， /test/t1
 		String lookupPath = getUrlPathHelper().getLookupPathForRequest(request);
+
+		// 把url放入请求参数中
 		request.setAttribute(LOOKUP_PATH, lookupPath);
 		this.mappingRegistry.acquireReadLock();
 		try {
+
+			// 根据url从映射关系中找HandlerMethod对象
 			HandlerMethod handlerMethod = lookupHandlerMethod(lookupPath, request);
+
 			return (handlerMethod != null ? handlerMethod.createWithResolvedBean() : null);
 		}
 		finally {
@@ -384,6 +405,10 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	@Nullable
 	protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletRequest request) throws Exception {
 		List<Match> matches = new ArrayList<>();
+
+		/**
+		 * 获取映射关系
+		 */
 		List<T> directPathMatches = this.mappingRegistry.getMappingsByUrl(lookupPath);
 		if (directPathMatches != null) {
 			addMatchingMappings(directPathMatches, matches, request);
@@ -556,6 +581,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		 */
 		@Nullable
 		public List<T> getMappingsByUrl(String urlPath) {
+			// 什么时候初始化
 			return this.urlLookup.get(urlPath);
 		}
 

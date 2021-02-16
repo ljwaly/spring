@@ -53,10 +53,33 @@ public abstract class AbstractAnnotationConfigDispatcherServletInitializer
 	@Override
 	@Nullable
 	protected WebApplicationContext createRootApplicationContext() {
+
+		/**
+		 * 钩子方法，调用子类{@link com.ljw.spring.mvc.s2.mvc.WebAppInitializer}的方法
+		 *
+		 * 这里只是创建上下文容器，并不启动，没有refresh
+		 *
+		 *
+		 * 使用无配置加载mvc-2
+		 *
+		 * 获取非Controller的springbean
+		 */
 		Class<?>[] configClasses = getRootConfigClasses();
 		if (!ObjectUtils.isEmpty(configClasses)) {
+
+			/**
+			 * 创建上下文对象--RootApplicationContext
+			 *
+			 * 对象不一样，类是一个
+			 */
 			AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+
+			/**
+			 * 作用未知
+			 */
 			context.register(configClasses);
+
+
 			return context;
 		}
 		else {
@@ -71,7 +94,23 @@ public abstract class AbstractAnnotationConfigDispatcherServletInitializer
 	 */
 	@Override
 	protected WebApplicationContext createServletApplicationContext() {
+		/**
+		 * 创建上下文对象--ServletApplicationContext
+		 *
+		 * 对象不一样，类是一个
+		 */
 		AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+
+		/**
+		 * 钩子方法，调用子类{@link com.ljw.spring.mvc.s2.mvc.WebAppInitializer}的方法
+		 *
+		 * 这里只是创建上下文容器，并不启动，没有refresh
+		 *
+		 *
+		 * 使用无配置加载mvc-2
+		 *
+		 * 获取Controller的springbean
+		 */
 		Class<?>[] configClasses = getServletConfigClasses();
 		if (!ObjectUtils.isEmpty(configClasses)) {
 			context.register(configClasses);

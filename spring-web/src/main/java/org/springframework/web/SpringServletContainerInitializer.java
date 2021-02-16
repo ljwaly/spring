@@ -109,6 +109,24 @@ import org.springframework.util.ReflectionUtils;
  * @see #onStartup(Set, ServletContext)
  * @see WebApplicationInitializer
  */
+
+/**
+ * Servlet容器
+ *
+ * 使用Servlet规范的，SPI技术
+ *
+ * tomcat启动的时候，
+ * 		自动加载这个类，
+ * 	    注解@HandlesTypes收集实现了WebApplicationInitializer接口的所有实例（实现了onStartup方法），
+ * 	    并调用本类的内部onStartup()方法
+ *
+ * 注解@HandlesTypes的作用，
+ * 		就是收集括号内设定的接口的所有实例，
+ * 		并把接口实例集合当做参数，
+ * 		传入调身的onStartup方法入参，
+ * 		并进行onStratup方法调用
+ *
+ */
 @HandlesTypes(WebApplicationInitializer.class)
 public class SpringServletContainerInitializer implements ServletContainerInitializer {
 
@@ -141,6 +159,12 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 	@Override
 	public void onStartup(@Nullable Set<Class<?>> webAppInitializerClasses, ServletContext servletContext)
 			throws ServletException {
+		/**
+		 * webAppInitializerClasses
+		 * 这个容器是实现了所有WebApplicationInitializer接口的实例类
+		 *
+		 */
+
 
 		List<WebApplicationInitializer> initializers = new LinkedList<>();
 
@@ -151,7 +175,12 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 				if (!waiClass.isInterface() && !Modifier.isAbstract(waiClass.getModifiers()) &&
 						WebApplicationInitializer.class.isAssignableFrom(waiClass)) {
 					try {
+
+						/**
+						 * 这里通过反射实例化，完成这些实例的实例化
+						 */
 						initializers.add((WebApplicationInitializer)
+								//实例化
 								ReflectionUtils.accessibleConstructor(waiClass).newInstance());
 					}
 					catch (Throwable ex) {
@@ -169,6 +198,16 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 		servletContext.log(initializers.size() + " Spring WebApplicationInitializers detected on classpath");
 		AnnotationAwareOrderComparator.sort(initializers);
 		for (WebApplicationInitializer initializer : initializers) {
+
+
+			/**
+			 * 实例化完成之后，
+			 * 进行实例的onStartup方法的调用
+			 * 这里是会完成spring的启动
+			 *
+			 * 其中AbstractDispatcherServletInitializer.class是启动spring的容器的主要类
+			 *
+			 */
 			initializer.onStartup(servletContext);
 		}
 	}

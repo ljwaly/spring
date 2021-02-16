@@ -144,6 +144,10 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 	 * invoke subclass initialization.
 	 * @throws ServletException if bean properties are invalid (or required
 	 * properties are missing), or if subclass initialization fails.
+	 *
+	 *
+	 * 完成mvc容器的Servlet上下文加载
+	 *
 	 */
 	@Override
 	public final void init() throws ServletException {
@@ -155,6 +159,8 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 				BeanWrapper bw = PropertyAccessorFactory.forBeanPropertyAccess(this);
 				ResourceLoader resourceLoader = new ServletContextResourceLoader(getServletContext());
 				bw.registerCustomEditor(Resource.class, new ResourceEditor(resourceLoader, getEnvironment()));
+
+
 				initBeanWrapper(bw);
 				bw.setPropertyValues(pvs, true);
 			}
@@ -167,6 +173,11 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 		}
 
 		// Let subclasses do whatever initialization they like.
+		/**
+		 * tomcat启动调用此init()方法
+		 *
+		 * 初始化springmvc容器的Servlet上下文加载-1
+		 */
 		initServletBean();
 	}
 

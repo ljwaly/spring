@@ -47,6 +47,9 @@ public abstract class AbstractContextLoaderInitializer implements WebApplication
 
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
+		/**
+		 * 根据上下文，创建servletListener
+		 */
 		registerContextLoaderListener(servletContext);
 	}
 
@@ -57,10 +60,55 @@ public abstract class AbstractContextLoaderInitializer implements WebApplication
 	 * @param servletContext the servlet context to register the listener against
 	 */
 	protected void registerContextLoaderListener(ServletContext servletContext) {
+
+		/**
+		 * 创建Spring上下文，注册了SpringContainer
+		 *
+		 * 这里只是创建上下文容器，并不启动，没有refresh
+		 * 使用无配置加载mvc-1，
+		 */
 		WebApplicationContext rootAppContext = createRootApplicationContext();
+
 		if (rootAppContext != null) {
+			// 创建监听
+
+			/**
+			 *  这里的 xml形式如下：
+			 *
+			 * 	<context-param>
+			 *     <param-name>contextConfigLocation</param-name>
+			 *     <param-value>
+			 *       	<!--加载spring配置-->
+			 *  		classpath:spring.xml
+			 *     </param-value>
+			 *   </context-param>
+			 *   <context-param>
+			 *     <param-name>webAppRootKey</param-name>
+			 *     <param-value>ServicePlatform.root</param-value>
+			 *   </context-param>
+			 *  <listener>
+			 *     <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+			 *  </listener>
+			 *
+			 *  这个listener是用来加载spring.xml的bean的，非controller的
+			 *
+			 *
+			 *  ContextLoaderListener实现了ServletContextListener接口
+			 *  	会在加入容器之后，
+			 *  	listener被调用接口的接口方法contextInitialized()的方法，
+			 *  	完成spring容器的初始化
+			 *
+			 */
 			ContextLoaderListener listener = new ContextLoaderListener(rootAppContext);
+
+
+
+
 			listener.setContextInitializers(getRootApplicationContextInitializers());
+
+			/**
+			 * 将listener加入到ServletContext容器中
+			 */
 			servletContext.addListener(listener);
 		}
 		else {

@@ -289,10 +289,27 @@ public class ContextLoader {
 						ApplicationContext parent = loadParentContext(servletContext);
 						cwac.setParent(parent);
 					}
+
+
+					/**
+					 *
+					 * 这里初始化了spring容器(refresh)-2
+					 */
 					configureAndRefreshWebApplicationContext(cwac, servletContext);
+
+
 				}
 			}
+
+
+			/**
+			 * 
+			 * 这里会吧spring的上下文对象（非Controller的bean的容器），设置到Servlet的上下文对象中
+			 */
 			servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, this.context);
+
+
+
 
 			ClassLoader ccl = Thread.currentThread().getContextClassLoader();
 			if (ccl == ContextLoader.class.getClassLoader()) {
@@ -398,6 +415,13 @@ public class ContextLoader {
 		}
 
 		customizeContext(sc, wac);
+
+
+
+		/**
+		 *
+		 * 这里初始化了spring容器(refresh)-3
+		 */
 		wac.refresh();
 	}
 

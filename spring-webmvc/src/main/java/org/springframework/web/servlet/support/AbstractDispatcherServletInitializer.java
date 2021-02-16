@@ -54,10 +54,30 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
+		/**
+		 * 总领上下文容器：ServletContext--servlet容器
+		 *
+		 * 根root上下文容器：spring容器
+		 * mvc上下文容器：mvc容器（父容器是spring容器（根root上下文））
+		 *
+		 *
+		 * ServletContext贯穿初始化前后
+		 *
+		 */
+
+
+
+
+		/**
+		 * 根据上下文，创建servletListener
+		 *
+		 * 这里上下文主要是指spring上下文（主要是非Controller的bean）
+		 */
 		super.onStartup(servletContext);
 
 		/**
-		 * 装配servlet容器
+		 * 创建mvc上下文，注册DispatchServlet
+		 * 这里是mvc上下文（主要是Controller）
 		 */
 		registerDispatcherServlet(servletContext);
 	}
@@ -77,24 +97,46 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 		String servletName = getServletName();
 		Assert.hasLength(servletName, "getServletName() must not return null or empty");
 
+		/**
+		 * 创建springMVC上下文
+		 */
 		WebApplicationContext servletAppContext = createServletApplicationContext();
 		Assert.notNull(servletAppContext, "createServletApplicationContext() must not return null");
 
 		/**
 		 * 装配Servlet（springmvc）的映射路径-1
+		 *
+		 * 创建DispatchServlet对象，
+		 * 把springmvc上下文设置到DispatcherServlet中
+		 *
+		 * servletAppContext在放入DispatcherServlet中的时候，
+		 * 当tomcat启动，会调用DispatcherServlet的父类{@link org.springframework.web.servlet.HttpServletBean}init方法-1
+		 *
 		 */
 		FrameworkServlet dispatcherServlet = createDispatcherServlet(servletAppContext);
 		Assert.notNull(dispatcherServlet, "createDispatcherServlet(WebApplicationContext) must not return null");
 		dispatcherServlet.setContextInitializers(getServletApplicationContextInitializers());
 
+
+		/**
+		 * 把DispacherServlet丢到Servlet上下文中
+		 */
 		ServletRegistration.Dynamic registration = servletContext.addServlet(servletName, dispatcherServlet);
 		if (registration == null) {
 			throw new IllegalStateException("Failed to register servlet with name '" + servletName + "'. " +
 					"Check if there is another servlet registered under the same name.");
 		}
 
+		// 随着tomcat启动，这个也会启动
 		registration.setLoadOnStartup(1);
+
+		/**
+		 * 钩子方法
+		 *
+		 * 需要加载拦截的url
+		 */
 		registration.addMapping(getServletMappings());
+
 		registration.setAsyncSupported(isAsyncSupported());
 
 		Filter[] filters = getServletFilters();
