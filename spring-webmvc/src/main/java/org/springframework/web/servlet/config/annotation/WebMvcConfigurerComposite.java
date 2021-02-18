@@ -50,6 +50,12 @@ class WebMvcConfigurerComposite implements WebMvcConfigurer {
 	@Override
 	public void configurePathMatch(PathMatchConfigurer configurer) {
 		for (WebMvcConfigurer delegate : this.delegates) {
+			/**
+			 * 装配path映射配置-3
+			 *
+			 * 调用钩子方法
+			 * 最终调用到自定义的实现了WebMvcConfigurer的类，调用对应实现的钩子方法的实现方法
+			 */
 			delegate.configurePathMatch(configurer);
 		}
 	}
@@ -85,6 +91,12 @@ class WebMvcConfigurerComposite implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		for (WebMvcConfigurer delegate : this.delegates) {
+			/**
+			 * 装配拦截器-4
+			 *
+			 * 调用钩子方法。
+			 * 最终调用到自定义的实现了WebMvcConfigurer的类，调用对应实现的钩子方法的实现方法
+			 */
 			delegate.addInterceptors(registry);
 		}
 	}

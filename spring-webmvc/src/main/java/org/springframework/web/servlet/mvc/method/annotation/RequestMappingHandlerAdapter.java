@@ -789,7 +789,12 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		}
 		else {
 			// No synchronization on session demanded at all...
-			mav = invokeHandlerMethod(request, response, handlerMethod);
+			/**
+			 *
+			 * http请求-8
+			 *
+			 */
+			mav = invokeHandlerMethod(request, response, handlerMethod);// http-8
 		}
 
 		if (!response.containsHeader(HEADER_CACHE_CONTROL)) {
@@ -875,7 +880,13 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 				invocableMethod = invocableMethod.wrapConcurrentResult(result);
 			}
 
-			invocableMethod.invokeAndHandle(webRequest, mavContainer);
+
+			/**
+			 *
+			 * http请求-9
+			 *
+			 */
+			invocableMethod.invokeAndHandle(webRequest, mavContainer);// http-9
 			if (asyncManager.isConcurrentHandlingStarted()) {
 				return null;
 			}

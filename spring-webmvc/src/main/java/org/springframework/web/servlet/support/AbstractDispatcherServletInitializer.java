@@ -57,8 +57,8 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 		/**
 		 * 总领上下文容器：ServletContext--servlet容器
 		 *
-		 * 根root上下文容器：spring容器
-		 * mvc上下文容器：mvc容器（父容器是spring容器（根root上下文））
+		 * root上下文容器：spring容器
+		 * mvc 上下文容器：mvc容器（父容器是spring容器（根root上下文））
 		 *
 		 *
 		 * ServletContext贯穿初始化前后
@@ -69,15 +69,19 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 
 
 		/**
-		 * 根据上下文，创建servletListener
-		 *
+		 * 根据上下文，创建ServletListener
 		 * 这里上下文主要是指spring上下文（主要是非Controller的bean）
+		 *
+		 * 通过Servlet规范，listener的调用，初始化了spring上下文
 		 */
 		super.onStartup(servletContext);
 
 		/**
 		 * 创建mvc上下文，注册DispatchServlet
 		 * 这里是mvc上下文（主要是Controller）
+		 *
+		 * 通过Servlet规范，DispatchServlet在系统启动的时候，会调用load，init方法，初始化了mvc上下文
+		 *
 		 */
 		registerDispatcherServlet(servletContext);
 	}

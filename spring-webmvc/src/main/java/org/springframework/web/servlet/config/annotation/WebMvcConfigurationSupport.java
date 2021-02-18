@@ -283,10 +283,32 @@ public class WebMvcConfigurationSupport implements ApplicationContextAware, Serv
 
 		RequestMappingHandlerMapping mapping = createRequestMappingHandlerMapping();
 		mapping.setOrder(0);
+
+		/**
+		 * 装配拦截器-1
+		 *
+		 * 调用钩子方法。
+		 * 最终调用到自定义的实现了WebMvcConfigurer的类，调用对应实现的钩子方法的实现方法
+		 */
 		mapping.setInterceptors(getInterceptors(conversionService, resourceUrlProvider));
+
 		mapping.setContentNegotiationManager(contentNegotiationManager);
+
+		/**
+		 * 装配跨域配置-1
+		 *
+		 * 调用钩子方法
+		 * 最终调用到自定义的实现了WebMvcConfigurer的类，调用对应实现的钩子方法的实现方法
+		 */
 		mapping.setCorsConfigurations(getCorsConfigurations());
 
+
+		/**
+		 * 装配path映射配置-1
+		 *
+		 * 调用钩子方法
+		 * 最终调用到自定义的实现了WebMvcConfigurer的类，调用对应实现的钩子方法的实现方法
+		 */
 		PathMatchConfigurer configurer = getPathMatchConfigurer();
 
 		Boolean useSuffixPatternMatch = configurer.isUseSuffixPatternMatch();
@@ -337,7 +359,14 @@ public class WebMvcConfigurationSupport implements ApplicationContextAware, Serv
 			ResourceUrlProvider mvcResourceUrlProvider) {
 		if (this.interceptors == null) {
 			InterceptorRegistry registry = new InterceptorRegistry();
+			/**
+			 * 装配拦截器-2
+			 *
+			 * 调用钩子方法。
+			 * 最终调用到自定义的实现了WebMvcConfigurer的类，调用对应实现的钩子方法的实现方法
+			 */
 			addInterceptors(registry);
+			
 			registry.addInterceptor(new ConversionServiceExposingInterceptor(mvcConversionService));
 			registry.addInterceptor(new ResourceUrlProviderExposingInterceptor(mvcResourceUrlProvider));
 			this.interceptors = registry.getInterceptors();
@@ -361,6 +390,12 @@ public class WebMvcConfigurationSupport implements ApplicationContextAware, Serv
 	protected PathMatchConfigurer getPathMatchConfigurer() {
 		if (this.pathMatchConfigurer == null) {
 			this.pathMatchConfigurer = new PathMatchConfigurer();
+			/**
+			 * 装配path映射配置-2
+			 *
+			 * 调用钩子方法
+			 * 最终调用到自定义的实现了WebMvcConfigurer的类，调用对应实现的钩子方法的实现方法
+			 */
 			configurePathMatch(this.pathMatchConfigurer);
 		}
 		return this.pathMatchConfigurer;
@@ -1077,6 +1112,12 @@ public class WebMvcConfigurationSupport implements ApplicationContextAware, Serv
 	protected final Map<String, CorsConfiguration> getCorsConfigurations() {
 		if (this.corsConfigurations == null) {
 			CorsRegistry registry = new CorsRegistry();
+			/**
+			 * 装配跨域配置-2
+			 *
+			 * 调用钩子方法
+			 * 最终调用到自定义的实现了WebMvcConfigurer的类，调用对应实现的钩子方法的实现方法
+			 */
 			addCorsMappings(registry);
 			this.corsConfigurations = registry.getCorsConfigurations();
 		}

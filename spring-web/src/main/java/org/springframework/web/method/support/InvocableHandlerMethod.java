@@ -135,7 +135,14 @@ public class InvocableHandlerMethod extends HandlerMethod {
 		if (logger.isTraceEnabled()) {
 			logger.trace("Arguments: " + Arrays.toString(args));
 		}
-		return doInvoke(args);
+
+		/**
+		 *
+		 * http请求-11
+		 *
+		 */
+		return doInvoke(args);//http-11
+
 	}
 
 	/**
@@ -187,7 +194,12 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	protected Object doInvoke(Object... args) throws Exception {
 		ReflectionUtils.makeAccessible(getBridgedMethod());
 		try {
-			return getBridgedMethod().invoke(getBean(), args);
+			/**
+			 *
+			 * http请求-12
+			 * 这里是反射调用
+			 */
+			return getBridgedMethod().invoke(getBean(), args);// http-12
 		}
 		catch (IllegalArgumentException ex) {
 			assertTargetBean(getBridgedMethod(), getBean(), args);

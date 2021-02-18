@@ -503,13 +503,14 @@ public class DispatcherServlet extends FrameworkServlet {
 
 		/**
 		 *
-		 * 路径映射
+		 * 路径映射关系建立
 		 *
 		 */
 		initHandlerMappings(context);
 		/**
 		 *
-		 *
+		 * 负责调用具体逻辑的
+		 * 具体controller和返回值解析
 		 *
 		 */
 		initHandlerAdapters(context);
@@ -518,6 +519,7 @@ public class DispatcherServlet extends FrameworkServlet {
 		/**
 		 *
 		 * 返回对象解析器
+		 * 视图解析
 		 *
 		 */
 		initViewResolvers(context);
@@ -958,7 +960,7 @@ public class DispatcherServlet extends FrameworkServlet {
 			 * http请求-5
 			 *
 			 */
-			doDispatch(request, response);
+			doDispatch(request, response);// http请求-4
 		}
 		finally {
 			if (!WebAsyncUtils.getAsyncManager(request).isConcurrentHandlingStarted()) {
@@ -1019,7 +1021,7 @@ public class DispatcherServlet extends FrameworkServlet {
 		HttpServletRequest processedRequest = request;
 		HandlerExecutionChain mappedHandler = null;
 		boolean multipartRequestParsed = false;
-
+		// 异步管理
 		WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
 
 		try {
@@ -1027,11 +1029,17 @@ public class DispatcherServlet extends FrameworkServlet {
 			Exception dispatchException = null;
 
 			try {
-				processedRequest = checkMultipart(request);
+				processedRequest = checkMultipart(request);// 文件上传
 				multipartRequestParsed = (processedRequest != request);
 
+				/**
+				 * 这个很重要，着重看
+				 *
+				 * 从路径映射中找到对应的Controller的方法和类
+				 */
 				// Determine handler for the current request.
 				mappedHandler = getHandler(processedRequest);
+
 				if (mappedHandler == null) {
 					noHandlerFound(processedRequest, response);
 					return;
@@ -1055,6 +1063,11 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 
 				// Actually invoke the handler.
+				/**
+				 *
+				 * http请求-6
+				 *
+				 */
 				mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
 
 				if (asyncManager.isConcurrentHandlingStarted()) {
@@ -1248,7 +1261,12 @@ public class DispatcherServlet extends FrameworkServlet {
 	@Nullable
 	protected HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
 
-		// handlerMappings实例
+		/**
+		 * handlerMappings实例
+		 * 
+		 * 一部分由注解@EnableWebMvc装配
+		 * 
+		 */
 		if (this.handlerMappings != null) {
 			for (HandlerMapping mapping : this.handlerMappings) {
 

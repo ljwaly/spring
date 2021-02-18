@@ -915,7 +915,12 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			processRequest(request, response);
 		}
 		else {
-			super.service(request, response);
+			/**
+			 *
+			 * http请求-1
+			 *
+			 */
+			super.service(request, response);// http请求-1
 		}
 	}
 
@@ -935,7 +940,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 		 * http请求-3
 		 *
 		 */
-		processRequest(request, response);
+		processRequest(request, response);// http请求-2
 	}
 
 	/**
@@ -1049,7 +1054,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 			 * http请求-4
 			 *
 			 */
-			doService(request, response);
+			doService(request, response);// http请求-3
 		}
 		catch (ServletException | IOException ex) {
 			failureCause = ex;

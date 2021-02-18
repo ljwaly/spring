@@ -38,6 +38,11 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
  *
  * @author Rossen Stoyanchev
  * @since 3.1
+ *
+ *
+ * 父类中的会装配默认的各种HandleMapping
+ * 通过@Bean方式注入
+ *
  */
 @Configuration(proxyBeanMethods = false)
 public class DelegatingWebMvcConfiguration extends WebMvcConfigurationSupport {
@@ -47,6 +52,11 @@ public class DelegatingWebMvcConfiguration extends WebMvcConfigurationSupport {
 
 	@Autowired(required = false)
 	public void setConfigurers(List<WebMvcConfigurer> configurers) {
+		/**
+		 * 这里就是把收集到的
+		 * 	实现了WebMvcConfigurer接口的bean的集合注入进来
+		 *
+		 */
 		if (!CollectionUtils.isEmpty(configurers)) {
 			this.configurers.addWebMvcConfigurers(configurers);
 		}
@@ -55,6 +65,12 @@ public class DelegatingWebMvcConfiguration extends WebMvcConfigurationSupport {
 
 	@Override
 	protected void configurePathMatch(PathMatchConfigurer configurer) {
+		/**
+		 * 装配path映射配置-3
+		 *
+		 * 调用钩子方法
+		 * 最终调用到自定义的实现了WebMvcConfigurer的类，调用对应实现的钩子方法的实现方法
+		 */
 		this.configurers.configurePathMatch(configurer);
 	}
 
@@ -80,6 +96,12 @@ public class DelegatingWebMvcConfiguration extends WebMvcConfigurationSupport {
 
 	@Override
 	protected void addInterceptors(InterceptorRegistry registry) {
+		/**
+		 * 装配拦截器-3
+		 *
+		 * 调用钩子方法。
+		 * 最终调用到自定义的实现了WebMvcConfigurer的类，调用对应实现的钩子方法的实现方法
+		 */
 		this.configurers.addInterceptors(registry);
 	}
 
