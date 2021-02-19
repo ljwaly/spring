@@ -1021,6 +1021,8 @@ public class DispatcherServlet extends FrameworkServlet {
 		HttpServletRequest processedRequest = request;
 		HandlerExecutionChain mappedHandler = null;
 		boolean multipartRequestParsed = false;
+
+
 		// 异步管理
 		WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
 
@@ -1029,15 +1031,17 @@ public class DispatcherServlet extends FrameworkServlet {
 			Exception dispatchException = null;
 
 			try {
-				processedRequest = checkMultipart(request);// 文件上传
+
+				// 文件上传
+				processedRequest = checkMultipart(request);
 				multipartRequestParsed = (processedRequest != request);
 
+				// Determine handler for the current request.
 				/**
 				 * 这个很重要，着重看
 				 *
 				 * 从路径映射中找到对应的Controller的方法和类
 				 */
-				// Determine handler for the current request.
 				mappedHandler = getHandler(processedRequest);
 
 				if (mappedHandler == null) {
@@ -1046,6 +1050,9 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 
 				// Determine handler adapter for the current request.
+				/**
+				 * 获取跟HandlerMethod匹配的HandlerAdapter对象
+				 */
 				HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
 
 				// Process last-modified header, if supported by the handler.
